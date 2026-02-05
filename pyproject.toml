@@ -18,7 +18,7 @@ dependencies = [
 ]
 
 [tool.poetry]
-packages = [{include = "news_digest", from = "src"}]
+packages = [{include = "pipeline"}]
 
 
 [build-system]
