@@ -1,7 +1,7 @@
 import feedparser
 import json
 
-class NewsRssParser:
+class RssCollector:
     def __init__(self, title, link, published, summary):
         self.title = title
         self.link = link
