@@ -28,7 +28,7 @@ def rss_feed_parse(url : str, number_of_news : int):
         news_items = []
         
         for entry in feed.entries[:number_of_news]:  
-            item = NewsRssParser(entry.title, entry.link, entry.published, entry.summary)
+            item = RssCollector(entry.title, entry.link, entry.published, entry.summary)
             news_items.append(item)
         return news_items
 
