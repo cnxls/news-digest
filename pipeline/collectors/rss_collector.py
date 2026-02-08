@@ -33,8 +33,7 @@ def rss_feed_parse(url : str, number_of_news : int):
         return news_items
 
 
-def parse_souces(sources : list):
-    source
+def parse_sources(sources : list):
     for source in sources:
         items = rss_feed_parse(source[0])
         items_list = [item.to_dict() for item in items]
