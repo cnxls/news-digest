@@ -1,21 +1,14 @@
 import feedparser
 import json
+from pipeline.models import Article
 
 class RssCollector:
-    def __init__(self, title, link, published, summary):
-        self.title = title
-        self.link = link
-        self.published = published
-        self.summary = summary
+    def __init__(self, feeds):
+        self.feeds = feeds 
 
-    def to_dict(self):
-        return {
-            'title': self.title,
-            'link': self.link,
-            'published': self.published,
-            'summary': self.summary
-        }
-
+    def collect(self, max_articles : int = 10) -> list[Article]:
+        for feed in self.feeds:
+            feedparser.parse(feed['url'])
 
 sources = [
        ('https://techcrunch.com/category/artificial-intelligence/feed/', 'TCRssNews.json'),
@@ -39,7 +32,3 @@ def parse_sources(sources : list):
         items_list = [item.to_dict() for item in items]
         filename = source[1]
         to_json(items_list, filename)    
-
-def to_json(items_list, filename):
-    with open(filename, 'w') as file:
-        json.dump(items_list, file, indent = 2)
