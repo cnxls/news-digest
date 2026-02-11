@@ -22,10 +22,3 @@ class RssCollector:
             news_items.append(item)
         return news_items
 
-    @staticmethod
-    def parse_sources(sources : list):
-        for source in sources:
-            items = RssCollector.rss_feed_parse(source[0])
-            items_list = [item.model_dump() for item in items]
-            filename = source[1]
-            Article.to_dict(items_list, filename)    
