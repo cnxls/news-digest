@@ -29,10 +29,3 @@ class RssCollector:
             items_list = [item.model_dump() for item in items]
             filename = source[1]
             Article.to_dict(items_list, filename)    
-
-
-sources = [
-       ('https://techcrunch.com/category/artificial-intelligence/feed/', 'TCRssNews.json'),
-       ('https://www.technologyreview.com/feed/', 'MitRssNews.json'),
-       ('https://www.wired.com/feed/tag/ai/latest/rss', 'WiredRssNews.json')
-        ]

@@ -10,6 +10,12 @@ class Settings(BaseSettings):
 
     news_api_key: str = Field(alias="NEWAPI")
 
+    rss_feeds: list[dict] = [
+    {"name": "techcrunch", "url": "https://techcrunch.com/category/artificial-intelligence/feed/"},
+    {"name": "mit", "url": "https://www.technologyreview.com/feed/"},
+    {"name": "wired", "url": "https://www.wired.com/feed/tag/ai/latest/rss"},
+    ]
+
     schedule_interval_hours: int = 6
     max_articles_per_source: int = 10
 
