@@ -12,6 +12,6 @@ class Article(BaseModel):
     collected_at: datetime = Field(default_factory=datetime.now)
 
     @staticmethod
-    def to_json(items_list, filename):
+    def to_dict(items_list, filename):
         with open(filename, 'w') as file:
             json.dump(items_list, file, indent = 2)

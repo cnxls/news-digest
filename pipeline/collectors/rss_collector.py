@@ -31,4 +31,4 @@ def parse_sources(sources : list):
         items = rss_feed_parse(source[0])
         items_list = [item.to_dict() for item in items]
         filename = source[1]
-        to_json(items_list, filename)    
+        Article.to_dict(items_list, filename)    
