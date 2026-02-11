@@ -6,6 +6,7 @@ class Settings(BaseSettings):
 
     openai_api_key: str            # reads OPENAI_API_KEY 
     anthropic_api_key: str         # reads ANTHROPIC_API_KEY 
+    google_api_key: str            # reads GOOGLE_API_KEY
     database_url: str              # reads DATABASE_URL 
 
     news_api_key: str = Field(alias="NEWAPI")
