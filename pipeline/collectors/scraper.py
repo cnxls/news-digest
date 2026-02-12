@@ -31,6 +31,11 @@ class WebScraper(BaseCollector):
 
             title = title.text.strip()
             link = link['href'] if link else ""
+            
+            if link and link.startswith("/"):
+                from urllib.parse import urljoin
+                link = urljoin(self.url,link)
+
             summary = card.select_one(self.selectors.get('summary',''))
             date = card.select_one(self.selectors.get('date',''))
 
