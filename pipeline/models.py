@@ -8,6 +8,7 @@ class Article(BaseModel):
     link: str
     source: str
     published: str = ""
+    content: str = ""
     summary: str = ""
     collected_at: datetime = Field(default_factory=datetime.now)
 
