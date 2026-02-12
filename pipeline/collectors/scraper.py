@@ -36,16 +36,18 @@ class WebScraper(BaseCollector):
                 from urllib.parse import urljoin
                 link = urljoin(self.url,link)
 
-            summary = card.select_one(self.selectors.get('summary',''))
-            date = card.select_one(self.selectors.get('date',''))
+            summary_sel = self.selectors.get('summary')
+            summary = card.select_one(summary_sel) if summary_sel else None
+            date_sel = self.selectors.get('date')
+            date = card.select_one(date_sel) if date_sel else None
 
-        article = Article(
-            source=self.source_name,
-            title=title,
-            link=link,
-            published=date.text if date else "",
-            summary=summary.text.strip(),
-            collected_at= datetime.datetime.now(),
-        )
-        results.append(article)
+            article = Article(
+                source=self.source_name,
+                title=title,
+                link=link,
+                published=date.text.strip() if date else "",
+                summary=summary.text.strip() if summary else "",
+                collected_at=datetime.datetime.now(),
+            )
+            results.append(article)
         return results
