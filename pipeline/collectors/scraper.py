@@ -1,5 +1,8 @@
 from pipeline.collectors.base import BaseCollector
-
+import requests
+from bs4 import BeautifulSoup
+import datetime
+from pipeline.models import Article
 
 class WebScraper(BaseCollector):
 
@@ -8,5 +11,36 @@ class WebScraper(BaseCollector):
         self.source_name = source_name
         self.selectors = selectors
 
-    def collect():
-        ...
+    def collect(self, max_articles: int = 10) -> list[Article]:
+
+        response = requests.get(self.url, headers={
+            "User-Agent": "Mozilla/5.0"  
+        })
+        response.raise_for_status()
+
+        soup = BeautifulSoup(response.text,"html.parser")
+        cards = soup.select(self.selectors['article'])
+        results = []
+
+        for card in cards[:max_articles]:
+            title = card.select_one(self.selectors['title'])
+            link = card.select_one(self.selectors.get('link', 'a'))
+            
+            if not title:
+                continue
+
+            title = title.text.strip()
+            link = link['href'] if link else ""
+            summary = card.select_one(self.selectors.get('summary',''))
+            date = card.select_one(self.selectors.get('date',''))
+
+        article = Article(
+            source=self.source_name,
+            title=title,
+            link=link,
+            published=date.text if date else "",
+            summary=summary.text.strip(),
+            collected_at= datetime.datetime.now(),
+        )
+        results.append(article)
+        return results
