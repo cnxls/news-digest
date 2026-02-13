@@ -23,5 +23,6 @@ class ArticleCleaner:
             return ""
 
         text = BeautifulSoup(raw, "html.parser").get_text()          
-        text = unescape(text)                                                         
+        text = unescape(text)    
+        text = re.sub(r'\s+', ' ', text).strip()                                                         
         return text
