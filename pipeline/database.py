@@ -81,3 +81,22 @@ class Database:
             cur.execute(sql)
             return cur.fetchall()
         
+    def mark_as_sent(self):
+        sql = """UPDATE articles 
+        SET is_sent = TRUE 
+        WHERE id IN
+        (SELECT id 
+        FROM articles
+        WHERE summary IS NOT NULL """
+        with self.conn.cursor() as cur:
+            cur.execute(sql)
+        
+    def save_digest(self, content: str, article_count: int) -> int:
+        sql = """INSERT INTO digest (content, article_count)
+        VALUES (%s, %s)
+        RETURNING id"""
+        with self.conn.cursor() as cur:
+            cur.execute(sql, (content, article_count))
+            digest_id = cur.fetchone()[0]
+        self.conn.commit()
+        return digest_id
