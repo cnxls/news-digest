@@ -92,7 +92,7 @@ class Database:
             cur.execute(sql)
         
     def save_digest(self, content: str, article_count: int) -> int:
-        sql = """INSERT INTO digest (content, article_count)
+        sql = """INSERT INTO digests (content, article_count)
         VALUES (%s, %s)
         RETURNING id"""
         with self.conn.cursor() as cur:
