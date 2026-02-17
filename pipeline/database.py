@@ -58,3 +58,26 @@ class Database:
         with self.conn.cursor() as cur:
             cur.execute(SCHEMA_SQL)
             self.conn.commit()
+            
+
+    def save_articles(self, articles: list[Article]) -> int:
+        sql = """INSERT INTO articles (title, link, source, published, summary)
+        VALUES (%s, %s, %s, %s, %s)
+        ON CONFLICT DO NOTHING"""
+        saved = 0
+        with self.conn.cursor() as cur:
+            for article in articles:
+                cur.execute(sql, (article.title, article.link, article.source, article.published, article.summary))
+                saved += cur.rowcount
+            self.conn.commit()
+        return saved
+    
+    def get_unsent(self) -> list[dict]:
+        sql = """SELECT * 
+        FROM articles
+        WHERE is_sent IS FALSE
+        ORDER BY collected_at DESC"""
+        with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(sql)
+            return cur.fetchall()
+        
