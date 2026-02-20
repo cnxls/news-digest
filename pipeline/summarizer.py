@@ -14,12 +14,12 @@ class Summarizer:
             return "anthropic", AsyncAnthropic(api_key=settings.anthropic_api_key)
 
         
-    async def ask_openai(selt, client: AsyncOpenAI, question: str, model: str) -> Dict[str, Any]:
+    async def ask_openai(self, client: AsyncOpenAI, question: str, model: str) -> Dict[str, Any]:
         async def _call():
             response = await client.chat.completions.create(
                 model=model,
                 messages=[
-                    {"role": "system", "content": ...},
+                    {"role": "system", "content": "You are an expert AI news curator. Your job is to produce a concise, informative summary of a news article about artificial intelligence or technology. Write 2-3 sentences that capture the key facts, why it matters, and any notable implications. Be factual, neutral in tone, and avoid marketing language. Output only the summary text with no preamble."},
                     {"role": "user", "content": question}
                 ],
                 max_tokens=512,
@@ -28,7 +28,7 @@ class Summarizer:
             return response
         
         try:
-            response = await _call       # call_with_retry(_call)
+            response = await _call()       # call_with_retry(_call)
             
             result = {
                 "text": response.choices[0].message.content,
