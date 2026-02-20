@@ -1,7 +1,7 @@
 import feedparser
 from pipeline.models import Article
 from pipeline.config import settings
-from base import BaseCollector
+from pipeline.collectors.base import BaseCollector
 class RssCollector(BaseCollector):
     def __init__(self, feeds: list[dict]):
         self.feeds = feeds 
