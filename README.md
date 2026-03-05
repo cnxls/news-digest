@@ -19,7 +19,7 @@ In active development. Core components built — collectors, processors, and dat
 - **Config** — centralized settings via `.env` (pydantic-settings)
 - **Models** — Article data model with validation (Pydantic)
 
-## What's Next
+## Working On:
 
 - [ ] LLM summarization (Claude / OpenAI)
 - [ ] Digest generation and formatting
