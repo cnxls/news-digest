@@ -51,7 +51,7 @@ Python, feedparser, NewsAPI, BeautifulSoup, PostgreSQL, Pydantic, Claude/OpenAI 
 ## Setup
 
 ```bash
-git clone https://github.com/your-username/news-digest.git
+git clone https://github.com/cnxls/news-digest.git
 cd news-digest
 python -m venv .venv
 source .venv/bin/activate
