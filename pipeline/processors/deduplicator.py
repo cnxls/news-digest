@@ -2,7 +2,7 @@ from difflib import SequenceMatcher
 from pipeline.models import Article
 
 
-class Deduplicator:
+class ArticleDeduplicator:
     SIMILARITY_THRESHOLD = 0.85
 
     def deduplicate(self, articles: list[Article]) -> list[Article]:   
