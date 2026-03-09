@@ -3,6 +3,7 @@ import os
 from pipeline.collectors.api_collector import ApiCollector
 from pipeline.collectors.rss_collector import RssCollector
 from pipeline.collectors.scraper import WebScraper
+from pipeline.processors import process
 
 def collect():
     sources_path = os.path.join(os.path.dirname(__file__), '..', '..', 'sources.yaml')
@@ -33,7 +34,7 @@ def collect():
             )
             articles.extend(collector.collect(max_articles=scrape_source.get('max_articles', 10)))
 
-    return articles
+    return process(articles)
 
 if __name__ == '__main__':
     collect()
