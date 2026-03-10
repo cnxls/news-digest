@@ -4,8 +4,10 @@ from pipeline.collectors.api_collector import ApiCollector
 from pipeline.collectors.rss_collector import RssCollector
 from pipeline.collectors.scraper import WebScraper
 from pipeline.processors import process
+from pipeline.database import Database
+from pipeline.config import settings
 
-def collect():
+def run_collect():
     sources_path = os.path.join(os.path.dirname(__file__), '..', '..', 'sources.yaml')
 
     with open(sources_path, 'r') as f:
@@ -34,7 +36,14 @@ def collect():
             )
             articles.extend(collector.collect(max_articles=scrape_source.get('max_articles', 10)))
 
-    return process(articles)
+    articles = process(articles)
+    
+    with Database(settings.database_url) as db:
+        db.init_tables()
+        saved = db.save_articles(articles)
+        print(f"Saved {len(articles)} new articles")
+    
+    return articles
 
 if __name__ == '__main__':
-    collect()
+    run_collect()

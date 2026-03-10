@@ -9,10 +9,10 @@ def main():
     args = parser.parse_args()
 
     if args.command == 'collect':
-        from pipeline.collectors import collect
+        from pipeline.collectors import run_collect
 
-        articles = collect()
-        print(f'Collected {len(articles)} articles')
+        articles = run_collect()
+        print(f'Collected and saved into db {len(articles)} articles')
         for article in articles:
             print(article)
 
