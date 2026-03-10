@@ -34,10 +34,10 @@ class Summarizer:
         elif provider_name == "openai":
             return "openai", AsyncOpenAI(api_key=settings.openai_api_key)
 
-    async def ask_anthropic(self, client: AsyncAnthropic, question: str, model: str) -> Dict[str, Any]:
+    async def ask_anthropic(self, client: AsyncAnthropic, question: str, model: str = 'claude-sonnet-4-6') -> Dict[str, Any]:
         async def _call():
             message = await client.messages.create(
-                model="claude-sonnet-4-6",
+                model=model,
                 max_tokens=1024,
                 system="You are an expert AI news curator. Your job is to produce a concise, informative summary of a news article about artificial intelligence or technology. Write 2-3 sentences that capture the key facts, why it matters, and any notable implications. Be factual, neutral in tone, and avoid marketing language. Output only the summary text with no preamble.",
                 messages=[{"role": "user", "content": question}]
@@ -63,7 +63,7 @@ class Summarizer:
         except APIError as e:
             raise
 
-    async def ask_openai(self, client: AsyncOpenAI, question: str, model: str) -> Dict[str, Any]:
+    async def ask_openai(self, client: AsyncOpenAI, question: str, model: str = 'gpt-5.1') -> Dict[str, Any]:
         async def _call():
             message = await client.chat.completions.create(
                 model=model,
@@ -93,3 +93,10 @@ class Summarizer:
             raise
         except RateLimitError as e:
             raise
+
+    async def summarize(self, articles):
+        if self.provider == 'anthropic':
+            return await self.ask_anthropic(self.client, question=articles)
+
+        elif self.provider == 'openai':
+            return await self.ask_openai(self.client, question=articles)
