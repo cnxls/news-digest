@@ -17,11 +17,11 @@ class Summarizer:
                 try:
                     return await func()
                 
-                except RateLimitError:
+                except (RateLimitError, AnthropicRateLimitError):
             
                     if attempt < retries-1:
                         await aio.sleep(time_interval ** attempt)
-                        return await func()
+                        continue
                 
                     else :
                         raise
@@ -84,7 +84,7 @@ class Summarizer:
                 "tokens": {
                     "input": message.usage.prompt_tokens,
                     "output": message.usage.completion_tokens,
-                    "total": message.usage.total_tokens
+                    "total": message.usage.completion_tokens + message.usage.prompt_tokens
                 }
             }
             return result
