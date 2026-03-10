@@ -25,7 +25,6 @@ CREATE INDEX IF NOT EXISTS idx_articles_is_sent
 CREATE TABLE IF NOT EXISTS digests (
     id            SERIAL PRIMARY KEY,
     content       TEXT NOT NULL,
-    article_count INTEGER,
     created_at    TIMESTAMP DEFAULT NOW(),
     sent_at       TIMESTAMP
 );
@@ -87,16 +86,26 @@ class Database:
         WHERE id IN
         (SELECT id 
         FROM articles
-        WHERE summary IS NOT NULL """
+        WHERE summary IS NOT NULL) """
         with self.conn.cursor() as cur:
             cur.execute(sql)
+            self.conn.commit()
         
-    def save_digest(self, content: str, article_count: int) -> int:
-        sql = """INSERT INTO digests (content, article_count)
-        VALUES (%s, %s)
+    def save_digest(self, content: str) -> int:
+        sql = """INSERT INTO digests (content)
+        VALUES (%s)
         RETURNING id"""
         with self.conn.cursor() as cur:
-            cur.execute(sql, (content, article_count))
+            cur.execute(sql, (content, ))
             digest_id = cur.fetchone()[0]
         self.conn.commit()
         return digest_id
+    
+    def get_todays_articles(self):
+        sql = """SELECT * 
+        FROM articles 
+        WHERE collected_at >= CURRENT_DATE
+        AND collected_at < CURRENT_DATE + INTERVAL '1 day'"""
+        with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(sql)
+            return cur.fetchall()
