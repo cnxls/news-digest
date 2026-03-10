@@ -18,10 +18,11 @@ In active development. Core components built — collectors, processors, and dat
 - **Database** — PostgreSQL storage for articles and digests
 - **Config** — centralized settings via `.env` (pydantic-settings)
 - **Models** — Article data model with validation (Pydantic)
+- **Summarizer** — LLM summarization via Claude or OpenAI with async retry logic
 
 ## Working On
 
-- [ ] LLM summarization (Claude / OpenAI)
+- [ ] Summarization pipeline (wire Summarizer into collect → summarize flow)
 - [ ] Digest generation and formatting
 - [ ] Scheduled pipeline runs
 - [ ] Delivery (email / Telegram / etc.)
