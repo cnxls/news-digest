@@ -2,12 +2,30 @@ from openai import AsyncOpenAI, OpenAIError, RateLimitError
 from anthropic import AsyncAnthropic, APIError, RateLimitError as AnthropicRateLimitError
 from pipeline.config import settings
 from typing import Dict, Any
+import asyncio as aio
 
 class Summarizer:
     def __init__(self,  provider_name: str = "anthropic"):
         self.provider, self.client = self.build_client(provider_name)
     
-    # def call_with_retry():
+    async def call_with_retry(self,
+                              func,
+                              retries: int = 3,
+                              time_interval: int = 2) -> None:
+        
+            for attempt in range(retries):
+                try:
+                    return await func()
+                
+                except RateLimitError:
+            
+                    if attempt < retries-1:
+                        await aio.sleep(time_interval ** attempt)
+                        return await func()
+                
+                    else :
+                        raise
+                    
 
     def build_client(self, provider_name: str = "openai"):
         if provider_name == "anthropic":
@@ -27,7 +45,7 @@ class Summarizer:
 
             return message
         try:
-            message = await _call()       # call_with_retry(_call)
+            message = await self.call_with_retry(_call)       
             
             result = {
                 "text": message.content[0].text,
@@ -58,7 +76,7 @@ class Summarizer:
             return message
         
         try:
-            message = await _call()       # call_with_retry(_call)
+            message = await self.call_with_retry(_call)
             
             result = {
                 "text": message.choices[0].message.content,
