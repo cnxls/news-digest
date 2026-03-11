@@ -15,7 +15,7 @@ class WebScraper(BaseCollector):
 
         response = requests.get(self.url, headers={
             "User-Agent": "Mozilla/5.0"  
-        })
+        }, timeout=10)
         response.raise_for_status()
 
         soup = BeautifulSoup(response.text,"html.parser")
