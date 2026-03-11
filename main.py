@@ -27,12 +27,10 @@ def main():
         summarizer = Summarizer()
 
         with Database(database_url=settings.database_url) as db:
-            db.connect()
             db.init_tables()
             articles = db.get_todays_articles()
-            
-            prompt = "\n\n".join(articles)
-            summary = aio.run(summarizer.summarize(f"{a['title']}\n {a['content']}" for a in articles))
+
+            summary = aio.run(summarizer.summarize("\n\n".join(f"{a['title']}\n {a['content']}" for a in articles)))
             print(summary)
 
             db.save_digest(summary['text'])

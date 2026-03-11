@@ -61,12 +61,12 @@ class Database:
 
     def save_articles(self, articles: list[Article]) -> int:
         sql = """INSERT INTO articles (title, link, source, published, content, summary)
-        VALUES (%s, %s, %s, %s, %s)
+        VALUES (%s, %s, %s, %s, %s, %s)
         ON CONFLICT DO NOTHING"""
         saved = 0
         with self.conn.cursor() as cur:
             for article in articles:
-                cur.execute(sql, (article.title, article.link, article.source, article.published, article.summary))
+                cur.execute(sql, (article.title, article.link, article.source, article.published, article.content, article.summary))
                 saved += cur.rowcount
             self.conn.commit()
         return saved
