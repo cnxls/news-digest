@@ -1,6 +1,6 @@
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from models import Article
+from pipeline.models import Article
 
 SCHEMA_SQL = """
 CREATE TABLE IF NOT EXISTS articles (
@@ -60,7 +60,7 @@ class Database:
             
 
     def save_articles(self, articles: list[Article]) -> int:
-        sql = """INSERT INTO articles (title, link, source, published, summary)
+        sql = """INSERT INTO articles (title, link, source, published, content, summary)
         VALUES (%s, %s, %s, %s, %s)
         ON CONFLICT DO NOTHING"""
         saved = 0
