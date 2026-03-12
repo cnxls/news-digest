@@ -1,7 +1,7 @@
 [project]
 name = "news-digest"
 version = "0.1.0"
-description = ""
+description = "news-digest tool"
 authors = [
     {name = "cnxls",email = "oles.melinyshyn2007@gmail.com"}
 ]
