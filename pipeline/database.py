@@ -109,3 +109,13 @@ class Database:
         with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute(sql)
             return cur.fetchall()
+
+    def get_unsent_digest(self):
+        sql="""SELECT id, content, created_at
+        FROM digests
+        WHERE sent_at IS NULL
+        ORDER BY created_at DESC"""
+        with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(sql)
+            return cur.fetchall()
+        
