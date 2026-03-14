@@ -1,10 +1,10 @@
 import yaml
 import os
-from pipeline.collectors.api_collector import ApiCollector
 from pipeline.collectors.rss_collector import RssCollector
 from pipeline.processors import process
 from pipeline.database import Database
 from pipeline.config import settings
+from pipeline.collectors.scraper import WebScraper 
 
 def run_collect():
     sources_path = os.path.join(os.path.dirname(__file__), '..', '..', 'sources.yaml')
@@ -18,22 +18,14 @@ def run_collect():
         collector = RssCollector(feeds=sources['rss'])
         articles.extend(collector.collect())
 
-    if 'api' in sources:
-        for api_source in sources['api']:
-            collector = ApiCollector(
-                api_key=api_source['api_key'],
-                query=api_source.get('query', 'artificial intelligence')
+    if 'scrape' in sources:
+        for scrape_source in sources['scrape']:
+            collector = WebScraper(
+                url=scrape_source['url'],
+                source_name=scrape_source['name'],
+                selectors=scrape_source['selectors']
             )
-            articles.extend(collector.collect(max_articles=api_source.get('max_articles', 10)))
-
-    # if 'scrape' in sources:
-    #     for scrape_source in sources['scrape']:
-    #         collector = WebScraper(
-    #             url=scrape_source['url'],
-    #             source_name=scrape_source['name'],
-    #             selectors=scrape_source['selectors']
-    #         )
-    #         articles.extend(collector.collect(max_articles=scrape_source.get('max_articles', 10)))
+            articles.extend(collector.collect(max_articles=scrape_source.get('max_articles', 10)))
 
     articles = process(articles)
     
