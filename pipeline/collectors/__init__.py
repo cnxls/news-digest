@@ -2,7 +2,6 @@ import yaml
 import os
 from pipeline.collectors.api_collector import ApiCollector
 from pipeline.collectors.rss_collector import RssCollector
-from pipeline.collectors.scraper import WebScraper
 from pipeline.processors import process
 from pipeline.database import Database
 from pipeline.config import settings
@@ -27,21 +26,21 @@ def run_collect():
             )
             articles.extend(collector.collect(max_articles=api_source.get('max_articles', 10)))
 
-    if 'scrape' in sources:
-        for scrape_source in sources['scrape']:
-            collector = WebScraper(
-                url=scrape_source['url'],
-                source_name=scrape_source['name'],
-                selectors=scrape_source['selectors']
-            )
-            articles.extend(collector.collect(max_articles=scrape_source.get('max_articles', 10)))
+    # if 'scrape' in sources:
+    #     for scrape_source in sources['scrape']:
+    #         collector = WebScraper(
+    #             url=scrape_source['url'],
+    #             source_name=scrape_source['name'],
+    #             selectors=scrape_source['selectors']
+    #         )
+    #         articles.extend(collector.collect(max_articles=scrape_source.get('max_articles', 10)))
 
     articles = process(articles)
     
     with Database(settings.database_url) as db:
         db.init_tables()
         saved = db.save_articles(articles)
-        print(f"Saved {len(articles)} new articles")
+        print(f"Saved {saved} new articles")
     
     return articles
 
