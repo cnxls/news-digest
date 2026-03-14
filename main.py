@@ -31,7 +31,7 @@ def main():
             db.init_tables()
             articles = db.get_todays_articles()
 
-            summary = aio.run(summarizer.summarize("\n\n".join(f"{a['title']}\n {a['content']}" for a in articles)))
+            summary = aio.run(summarizer.summarize("\n\n".join(f"{a['title']}\n {a['summary']}" for a in articles)))
             print(summary)
 
             db.save_digest(summary['text'])
