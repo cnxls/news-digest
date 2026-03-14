@@ -35,6 +35,7 @@ def main():
             print(summary)
 
             db.save_digest(summary['text'])
+            db.mark_as_sent()
 
 
     if args.command == 'summarize':
