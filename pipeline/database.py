@@ -81,12 +81,9 @@ class Database:
             return cur.fetchall()
         
     def mark_as_sent(self):
-        sql = """UPDATE articles 
-        SET is_sent = TRUE 
-        WHERE id IN
-        (SELECT id 
-        FROM articles
-        WHERE summary IS NOT NULL) """
+        sql = """UPDATE articles
+        SET is_sent = TRUE
+        WHERE summary IS NOT NULL"""
         with self.conn.cursor() as cur:
             cur.execute(sql)
             self.conn.commit()
@@ -98,7 +95,7 @@ class Database:
         with self.conn.cursor() as cur:
             cur.execute(sql, (content, ))
             digest_id = cur.fetchone()[0]
-        self.conn.commit()
+            self.conn.commit()
         return digest_id
     
     def get_todays_articles(self):
@@ -118,4 +115,11 @@ class Database:
         with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute(sql)
             return cur.fetchall()
-        
+    
+    def mark_digest_sent(self, digest_id):
+        sql = """UPDATE digests
+        SET sent_at = NOW()
+        WHERE id = %s"""
+        with self.conn.cursor() as cur:
+            cur.execute(sql, (digest_id,))
+            self.conn.commit()
