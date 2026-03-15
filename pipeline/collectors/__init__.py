@@ -4,7 +4,6 @@ from pipeline.collectors.rss_collector import RssCollector
 from pipeline.processors import process
 from pipeline.database import Database
 from pipeline.config import settings
-from pipeline.collectors.scraper import WebScraper
 from pipeline.logger import get_logger
 
 logger = get_logger()
