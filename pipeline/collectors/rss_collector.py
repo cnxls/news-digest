@@ -2,16 +2,22 @@ import feedparser
 from pipeline.models import Article
 from pipeline.config import settings
 from pipeline.collectors.base import BaseCollector
+from pipeline.logger import get_logger
+
+logger = get_logger()
+
 class RssCollector(BaseCollector):
     def __init__(self, feeds: list[dict]):
-        self.feeds = feeds 
+        self.feeds = feeds
 
     def collect(self, max_articles : int = 10) -> list[Article]:
         articles = []
         for feed in self.feeds:
+            logger.info(f"Parsing RSS feed: {feed['name']}")
             art = RssCollector.rss_feed_parse(feed['url'], feed['name'], max_articles)
+            logger.info(f"  → {len(art)} articles from {feed['name']}")
             articles.extend(art)
-        return articles 
+        return articles
 
     @staticmethod
     def rss_feed_parse(url : str, name: str, number_of_news : int = 50):
