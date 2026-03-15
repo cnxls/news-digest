@@ -8,8 +8,8 @@ class Settings(BaseSettings):
     anthropic_api_key: str         # reads ANTHROPIC_API_KEY 
     google_api_key: str            # reads GOOGLE_API_KEY
     database_url: str              # reads DATABASE_URL 
-    telegram_bot_token: str
-    telegram_chat_id: str
+    telegram_bot_token: str        # reads TELEGRAM_BOT_TOKEN
+    telegram_chat_id: str          # reads TELEGRAM_CHAT_ID
 
     news_api_key: str = Field(alias="NEWAPI")
 
