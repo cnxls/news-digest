@@ -1,4 +1,7 @@
 import argparse
+from pipeline.logger import get_logger
+
+logger = get_logger()
 
 
 def main():
@@ -15,9 +18,7 @@ def main():
         from pipeline.collectors import run_collect
 
         articles = run_collect()
-        print(f'Collected and saved into db {len(articles)} articles')
-        for article in articles:
-            print(article)
+        logger.info(f"Pipeline complete: {len(articles)} articles collected")
 
     def summarize():
         import asyncio as aio
@@ -32,9 +33,11 @@ def main():
             articles = db.get_unsent()
 
             summary = aio.run(summarizer.summarize("\n\n".join(f"{a['title']}\n {a['summary']}" for a in articles)))
-            print(summary)
+            logger.info(f"Summarized {len(articles)} articles — {summary['tokens']['total']} tokens used")
 
             db.save_digest(summary['text'])
+            db.mark_as_sent()
+            logger.info("Digest saved and articles marked as sent")
 
 
     if args.command == 'summarize':

@@ -1,8 +1,11 @@
 from openai import AsyncOpenAI, OpenAIError, RateLimitError
 from anthropic import AsyncAnthropic, APIError, RateLimitError as AnthropicRateLimitError
 from pipeline.config import settings
+from pipeline.logger import get_logger
 from typing import Dict, Any
 import asyncio as aio
+
+logger = get_logger()
 
 class Summarizer:
     def __init__(self,  provider_name: str = "anthropic"):
@@ -18,12 +21,11 @@ class Summarizer:
                     return await func()
                 
                 except (RateLimitError, AnthropicRateLimitError):
-            
                     if attempt < retries-1:
+                        logger.warning(f"Rate limited, retrying in {time_interval ** attempt}s (attempt {attempt+1}/{retries})")
                         await aio.sleep(time_interval ** attempt)
                         continue
-                
-                    else :
+                    else:
                         raise
                     
 
@@ -95,6 +97,7 @@ class Summarizer:
             raise
 
     async def summarize(self, articles):
+        logger.info(f"Summarizing with {self.provider}")
         if self.provider == 'anthropic':
             return await self.ask_anthropic(self.client, question=articles)
 
