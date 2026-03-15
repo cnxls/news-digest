@@ -34,7 +34,7 @@ class Summarizer:
         elif provider_name == "openai":
             return "openai", AsyncOpenAI(api_key=settings.openai_api_key)
 
-    async def ask_anthropic(self, client: AsyncAnthropic, question: str, model: str = 'claude-sonnet-4-6') -> Dict[str, Any]:
+    async def ask_anthropic(self, client: AsyncAnthropic, question: str, model: str = 'claude-haiku-4-5') -> Dict[str, Any]:
         async def _call():
             message = await client.messages.create(
                 model=model,
