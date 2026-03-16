@@ -65,7 +65,7 @@ class Summarizer:
         except APIError as e:
             raise
 
-    async def ask_openai(self, client: AsyncOpenAI, question: str, model: str = 'gpt-5.1') -> Dict[str, Any]:
+    async def ask_openai(self, client: AsyncOpenAI, question: str, model: str = 'gpt-4o-mini') -> Dict[str, Any]:
         async def _call():
             message = await client.chat.completions.create(
                 model=model,
