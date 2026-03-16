@@ -4,4 +4,4 @@ class BaseCollector(ABC):
 
     @abstractmethod
     def collect(self, max_articles: int = 10) -> list[Article]:
-        ...
+        pass
