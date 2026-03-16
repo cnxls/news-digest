@@ -21,16 +21,6 @@ def run_collect():
         collector = RssCollector(feeds=sources['rss'])
         articles.extend(collector.collect())
 
-    if 'scrape' in sources:
-        for scrape_source in sources['scrape']:
-            logger.info(f"Scraping {scrape_source['name']}")
-            collector = WebScraper(
-                url=scrape_source['url'],
-                source_name=scrape_source['name'],
-                selectors=scrape_source['selectors']
-            )
-            articles.extend(collector.collect(max_articles=scrape_source.get('max_articles', 10)))
-
     logger.info(f"Collected {len(articles)} articles before processing")
     articles = process(articles)
     logger.info(f"After processing: {len(articles)} articles")
