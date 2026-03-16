@@ -23,7 +23,7 @@ env/
 # Secrets
 # -----------------------
 .env
-.env.*
+.env.local
 
 # -----------------------
 # IDE / Editors
