@@ -10,6 +10,7 @@ def main():
 
     subparsers.add_parser("collect", help="Collect News from config sources?")
     subparsers.add_parser("summarize", help="Summarize articles collected?")
+    subparsers.add_parser("deliver", help="Send digest to Telegram")
     subparsers.add_parser("schedule", help = "Run scheduler")
 
     args = parser.parse_args()
@@ -43,6 +44,21 @@ def main():
     if args.command == 'summarize':
         summarize()
                 
+
+    if args.command == 'deliver':
+        from pipeline.delivery.telegram import TelegramDelivery
+        from pipeline.database import Database
+        from pipeline.config import settings
+
+        delivery = TelegramDelivery()
+        with Database(database_url=settings.database_url) as db:
+            db.init_tables()
+            digest = db.get_unsent_digest()
+            if not digest:
+                logger.info("No unsent digest found")
+                return
+            if delivery.deliver(digest['content']):
+                db.mark_digest_sent(digest['id'])
 
     if args.command == 'schedule':
         from pipeline.scheduler import scheduled_run
