@@ -60,14 +60,33 @@ def main():
             if delivery.deliver(digest['content']):
                 db.mark_digest_sent(digest['id'])
 
+    def deliver():
+        from pipeline.delivery.telegram import TelegramDelivery
+        from pipeline.database import Database
+        from pipeline.config import settings
+
+        delivery = TelegramDelivery()
+        with Database(database_url=settings.database_url) as db:
+            db.init_tables()
+            digest = db.get_unsent_digest()
+            if not digest:
+                logger.info("No unsent digest found")
+                return
+            if delivery.deliver(digest['content']):
+                db.mark_digest_sent(digest['id'])
+
+    if args.command == 'deliver':
+        deliver()
+
     if args.command == 'schedule':
         from pipeline.scheduler import scheduled_run
         from pipeline.collectors import run_collect
-        
+
         def pipeline_task():
             run_collect()
             summarize()
-            
+            deliver()
+
         scheduled_run(pipeline_task)
 
 
