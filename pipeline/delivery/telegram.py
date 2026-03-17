@@ -1,6 +1,9 @@
 from pipeline.delivery.base import BaseDelivery
 from pipeline.config import settings
-import re
+from pipeline.logger import get_logger
+import requests
+
+logger = get_logger()
 
 class TelegramDelivery(BaseDelivery):
     
@@ -22,8 +25,25 @@ class TelegramDelivery(BaseDelivery):
                 position = 4096
 
             chunks.append(text[:position])
-            
-            chunks.append(text[:4097])
             text = text[position + 1:]
     
         return chunks
+
+    def deliver(self,digest: str) -> bool:
+
+        chunks = self.split_message(digest)
+        for chunk in chunks:
+            payload = {
+                "chat_id":self.chat_id,
+                "text": chunk,
+                "parse_mode":"HTML"
+            }
+            response = requests.post(self.api_url,json=payload,timeout=20)
+
+
+            if not response.ok:
+                logger.error(f"Tg API error:{response.status_code} - {response.text}")
+                return False
+
+        logger.info("Digest delivered to Tg successfully")
+        return True
