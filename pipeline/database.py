@@ -114,8 +114,8 @@ class Database:
         ORDER BY created_at DESC"""
         with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute(sql)
-            return cur.fetchall()
-    
+            return cur.fetchone()
+
     def mark_digest_sent(self, digest_id):
         sql = """UPDATE digests
         SET sent_at = NOW()
