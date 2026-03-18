@@ -7,25 +7,26 @@ from pipeline.logger import get_logger
 logger = get_logger()
 
 class RssCollector(BaseCollector):
-    def __init__(self, feeds: list[dict]):
+    def __init__(self, category: str, feeds: list[dict]):
         self.feeds = feeds
+        self.category = category
 
     def collect(self, max_articles : int = 10) -> list[Article]:
         articles = []
         for feed in self.feeds:
             logger.info(f"Parsing RSS feed: {feed['name']}")
-            art = RssCollector.rss_feed_parse(feed['url'], feed['name'], max_articles)
+            art = self.rss_feed_parse(feed['url'], feed['name'], max_articles)
             logger.info(f"  → {len(art)} articles from {feed['name']}")
             articles.extend(art)
         return articles
 
-    @staticmethod
-    def rss_feed_parse(url : str, name: str, number_of_news : int = 50):
+    def rss_feed_parse(self, url : str, name: str, number_of_news : int = 50):
         feed = feedparser.parse(url)
         news_items = []
         
         for entry in feed.entries[:number_of_news]:  
-            item = Article(title=entry.title,
+            item = Article(category= self.category,
+                            title=entry.title,
                             link=entry.link,
                             source=name, 
                             published=getattr(entry, 'published', ''), 
