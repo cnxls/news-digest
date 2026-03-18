@@ -4,6 +4,7 @@ import json
 
 
 class Article(BaseModel):
+    category: str
     title: str
     link: str
     source: str

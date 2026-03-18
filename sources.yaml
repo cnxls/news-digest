@@ -1,11 +1,19 @@
 rss:
-  - name: techcrunch
-    url: https://techcrunch.com/category/artificial-intelligence/feed/
-  - name: mit
-    url: https://www.technologyreview.com/feed/
-  - name: ycombinator
-    url: https://news.ycombinator.com/rss
-  - name: venturebeat
-    url: https://venturebeat.com/category/ai/feed/
-  - name: verge
-    url: https://www.theverge.com/rss/ai-artificial-intelligence/index.xml
+  tech:
+    - name: techcrunch
+      url: https://techcrunch.com/category/artificial-intelligence/feed/
+    - name: mit
+      url: https://www.technologyreview.com/feed/
+    - name: ycombinator
+      url: https://news.ycombinator.com/rss
+    - name: venturebeat
+      url: https://venturebeat.com/category/ai/feed/
+    - name: verge
+      url: https://www.theverge.com/rss/ai-artificial-intelligence/index.xml
+  finance:
+    - name: bloomberg
+      url: https://www.bloomberg.com/feeds/podcasts/etf-report.xml
+    - name: reuters
+      url: https://www.reuters.com/rssFeed/technologyNews
+    - name: wsj
+      url: https://www.wsj.com/xml/rss/3_7455.xml
