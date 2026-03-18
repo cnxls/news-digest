@@ -8,7 +8,7 @@ from pipeline.logger import get_logger
 
 logger = get_logger()
 
-def run_collect():
+def run_collect(category = None):
     sources_path = os.path.join(os.path.dirname(__file__), '..', '..', 'sources.yaml')
 
     with open(sources_path, 'r') as f:
@@ -18,8 +18,12 @@ def run_collect():
 
     if 'rss' in sources:
         logger.info("Collecting from RSS feeds")
-        collector = RssCollector(feeds=sources['rss'])
-        articles.extend(collector.collect())
+        for cat, feeds in sources['rss'].items():
+            if category and category != cat:
+                continue
+            logger.info(f"Collecting from RSS feeds: {cat}")
+            collector = RssCollector(category=cat, feeds=feeds)
+            articles.extend(collector.collect())
 
     logger.info(f"Collected {len(articles)} articles before processing")
     articles = process(articles)
