@@ -162,3 +162,10 @@ class Database:
         with self.conn.cursor() as cur:
             cur.execute(sql, (categories, chat_id,))
             self.conn.commit()
+
+    def get_categories(self, chat_id):
+        sql = """SELECT categories
+        FROM subscribers
+        WHERE chat_id = (%s)"""
+        with self.conn.cursor() as cur:
+            cur.execute(sql, ())
