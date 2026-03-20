@@ -33,9 +33,25 @@ async def unsubscribe(update, context):
     await update.message.reply_text("Unsubscribed. Use /start to come back anytime.")
 
 
+async def todays_digest(update, context):
+    chat_id = update.effective_chat.id
+    categories = db.get_categories(chat_id=chat_id)
+    if not categories:
+        await update.message.reply_text("No categories selected. Use /subscribe to choose.")
+        return
+    digests = db.get_unsent_digest_for_user(categories, chat_id)
+    if not digests:
+        await update.message.reply_text("No new digests available.")
+        return
+    for digest in digests:
+        await update.message.reply_text(digest["content"])
+        db.record_delivery(digest["id"], chat_id=chat_id)
+
+
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("subscribe", subscribe))
 app.add_handler(CommandHandler("unsubscribe", unsubscribe))
+app.add_handler(CommandHandler("digest", todays_digest))
 
 if __name__ == "__main__":
     db.connect()
