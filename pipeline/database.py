@@ -137,13 +137,13 @@ class Database:
             cur.execute(sql, (digest_id,))
             self.conn.commit()
 
-    def add_subscriber(self, chat_id = None):
+    def add_subscriber(self, chat_id):
         sql = """INSERT INTO subscribers (chat_id)
         VALUES (%s)
         ON CONFLICT(chat_id) DO UPDATE
         SET is_active = TRUE"""
         with self.conn.cursor() as cur:
-            cur.execute(sql,)
+            cur.execute(sql,(chat_id,))
             self.conn.commit()
 
     def remove_subscriber(self, chat_id):
@@ -156,6 +156,9 @@ class Database:
 
     def update_categories(self, categories, chat_id):
         sql = """UPDATE subscribers
-         SET categories = %s
-         WHERE chat_id = %s
-         AND is_active = TRUE"""
+        SET categories = %s
+        WHERE chat_id = %s
+        AND is_active = TRUE"""
+        with self.conn.cursor() as cur:
+            cur.execute(sql, (categories, chat_id,))
+            self.conn.commit()
