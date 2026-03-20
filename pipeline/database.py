@@ -34,7 +34,6 @@ CREATE TABLE IF NOT EXISTS digests (
 CREATE TABLE IF NOT EXISTS subscribers (
     id            SERIAL PRIMARY KEY,
     chat_id       BIGINT UNIQUE,
-    username      TEXT,
     categories    TEXT[],
     is_active     BOOLEAN DEFAULT TRUE,
     created_at    TIMESTAMP DEFAULT NOW()
@@ -137,3 +136,26 @@ class Database:
         with self.conn.cursor() as cur:
             cur.execute(sql, (digest_id,))
             self.conn.commit()
+
+    def add_subscriber(self, chat_id = None):
+        sql = """INSERT INTO subscribers (chat_id)
+        VALUES (%s)
+        ON CONFLICT(chat_id) DO UPDATE
+        SET is_active = TRUE"""
+        with self.conn.cursor() as cur:
+            cur.execute(sql,)
+            self.conn.commit()
+
+    def remove_subscriber(self, chat_id):
+        sql = """UPDATE subscribers
+        SET is_active = FALSE
+        WHERE chat_id = (%s)"""
+        with self.conn.cursor() as cur:
+            cur.execute(sql, (chat_id,))
+            self.conn.commit()
+
+    def update_categories(self, categories, chat_id):
+        sql = """UPDATE subscribers
+         SET categories = %s
+         WHERE chat_id = %s
+         AND is_active = TRUE"""
