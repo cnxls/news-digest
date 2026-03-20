@@ -177,11 +177,24 @@ class Database:
         WHERE chat_id = (%s)"""
         with self.conn.cursor() as cur:
             cur.execute(sql, (chat_id,))
+            return cur.fetchone()
 
     def record_delivery(self, digest_id, chat_id):
         sql = """INSERT INTO digest_deliveries (digest_id, chat_id)
         VALUES (%s, %s)
         ON CONFLICT(digest_id, chat_id) DO NOTHING"""
         with self.conn.cursor() as cur:
-            cur.execute(sql)
+            cur.execute(sql, (digest_id, chat_id, ))
             self.conn.commit()
+
+    def get_unsent_digest_for_user(self, categories, chat_id):
+        sql = """SELECT d.id, d.content, d.category
+        FROM digests d
+        WHERE d.category = ANY(%s)
+        AND d.id NOT IN (
+            SELECT digest_id FROM digest_deliveries
+            WHERE chat_id = %s)
+        ORDER BY d.created_at DESC """
+        with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(sql, (categories, chat_id, ))
+            return cur.fetchall()
