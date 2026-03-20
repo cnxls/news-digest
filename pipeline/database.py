@@ -30,6 +30,15 @@ CREATE TABLE IF NOT EXISTS digests (
     sent_at       TIMESTAMP,
     category      TEXT
 );
+
+CREATE TABLE IF NOT EXISTS subscribers (
+    id            SERIAL PRIMARY KEY,
+    chat_id       BIGINT UNIQUE,
+    username      TEXT,
+    categories    TEXT[],
+    is_active     BOOLEAN DEFAULT TRUE,
+    created_at    TIMESTAMP DEFAULT NOW()
+);
 """
 
 
