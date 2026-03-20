@@ -38,6 +38,14 @@ CREATE TABLE IF NOT EXISTS subscribers (
     is_active     BOOLEAN DEFAULT TRUE,
     created_at    TIMESTAMP DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS digest_deliveries (
+    id          SERIAL PRIMARY KEY,
+    digest_id   INTEGER REFERENCES digests(id),
+    chat_id     BIGINT REFERENCES subscribers(chat_id),
+    sent_at     TIMESTAMP DEFAULT NOW(),
+    UNIQUE(digest_id, chat_id)
+);
 """
 
 
@@ -168,4 +176,12 @@ class Database:
         FROM subscribers
         WHERE chat_id = (%s)"""
         with self.conn.cursor() as cur:
-            cur.execute(sql, ())
+            cur.execute(sql, (chat_id,))
+
+    def record_delivery(self, digest_id, chat_id):
+        sql = """INSERT INTO digest_deliveries (digest_id, chat_id)
+        VALUES (%s, %s)
+        ON CONFLICT(digest_id, chat_id) DO NOTHING"""
+        with self.conn.cursor() as cur:
+            cur.execute(sql)
+            self.conn.commit()
