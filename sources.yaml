@@ -11,9 +11,9 @@ rss:
     - name: verge
       url: https://www.theverge.com/rss/ai-artificial-intelligence/index.xml
   finance:
-    - name: bloomberg
-      url: https://www.bloomberg.com/feeds/podcasts/etf-report.xml
-    - name: reuters
-      url: https://www.reuters.com/rssFeed/technologyNews
-    - name: wsj
-      url: https://www.wsj.com/xml/rss/3_7455.xml
+    - name: yahoofinance
+      url: https://feeds.finance.yahoo.com/rss/2.0/headline?s=^GSPC&region=US&lang=en-US
+    - name: cnbc
+      url: https://www.cnbc.com/id/100003114/device/rss/rss.html
+    - name: marketwatch
+      url: https://feeds.marketwatch.com/marketwatch/topstories/
