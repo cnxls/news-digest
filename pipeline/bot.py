@@ -27,10 +27,40 @@ async def subscribe(update, context):
     db.update_categories(categories=categories, chat_id=chat_id)
     await update.message.reply_text(f"Subscribed to : {', '.join(categories)}")
     
+
+
 async def unsubscribe(update, context):
     chat_id = update.effective_chat.id
-    db.remove_subscriber(chat_id)
-    await update.message.reply_text("Unsubscribed. Use /start to come back anytime.")
+    categories_to_remove = context.args
+
+    if not categories_to_remove:
+        db.remove_subscriber(chat_id)
+        await update.message.reply_text("Unsubscribed from all topics.\nUse /start to come back anytime.")
+        return
+
+    valid = ["tech", "finance", "science", "world", "crypto", "startups"]
+    not_valid = [c for c in categories_to_remove if c not in valid]
+    if not_valid:
+        await update.message.reply_text(f"Unknown categories: {', '.join(not_valid)}")
+        return
+
+    current = db.get_categories(chat_id=chat_id)
+    if not current:
+        await update.message.reply_text("You have no active subscriptions.")
+        return
+
+    remaining = [c for c in current if c not in categories_to_remove]
+    if not remaining:
+        db.remove_subscriber(chat_id)
+        await update.message.reply_text("Unsubscribed from all topics.\nUse /start to come back anytime.")
+        return
+
+    db.update_categories(categories=remaining, chat_id=chat_id)
+    removed = [c for c in categories_to_remove if c in current]
+    await update.message.reply_text(
+        f"Removed: {', '.join(removed)}\n"
+        f"Still subscribed to: {', '.join(remaining)}"
+    )
 
 
 async def todays_digest(update, context):
@@ -75,6 +105,8 @@ app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("subscribe", subscribe))
 app.add_handler(CommandHandler("unsubscribe", unsubscribe))
 app.add_handler(CommandHandler("digest", todays_digest))
+app.add_handler(CommandHandler("help", help))
+app.add_handler(CommandHandler("mysubs", mysubs))
 
 if __name__ == "__main__":
     db.connect()
