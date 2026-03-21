@@ -25,7 +25,7 @@ async def subscribe(update, context):
         return
     
     db.update_categories(categories=categories, chat_id=chat_id)
-    await update.message.reply_text(f"Subscribed to :{', '.join(categories)}")
+    await update.message.reply_text(f"Subscribed to : {', '.join(categories)}")
     
 async def unsubscribe(update, context):
     chat_id = update.effective_chat.id
@@ -46,6 +46,29 @@ async def todays_digest(update, context):
     for digest in digests:
         await update.message.reply_text(digest["content"], parse_mode="HTML")
         db.record_delivery(digest["id"], chat_id=chat_id)
+
+async def help(update, context):
+    await update.message.reply_text(
+        "<b>Available commands:</b>\n\n"
+        "/start — Register and get started\n"
+        "/subscribe &lt;categories&gt; — Subscribe to topics\n"
+        "/unsubscribe — Unsubscribe from all updates\n"
+        "/digest — Get your latest news digest\n"
+        "/mysubs — View your current subscriptions\n"
+        "/help — Show this message\n\n"
+        "<b>Categories:</b> tech, finance, science, world, crypto, startups\n\n"
+        "<i>Example:</i> /subscribe tech finance crypto",
+        parse_mode="HTML"
+    )
+
+async def mysubs(update, context):
+    chat_id = update.effective_chat.id
+    categories = db.get_categories(chat_id=chat_id)
+    if not categories:
+        await update.message.reply_text("You have no active subscriptions.\nUse /subscribe to choose topics.")
+        return 
+    cat_list = "\n".join(f"  • {c}" for c in categories)
+    await update.message.reply_text(f"You are subscribed to : \n\n{cat_list}")
 
 
 app.add_handler(CommandHandler("start", start))
