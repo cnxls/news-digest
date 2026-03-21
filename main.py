@@ -50,23 +50,31 @@ def main():
     if args.command == 'summarize':
         summarize(category=args.category)
 
-    def deliver(category):
+    def deliver(categories):
         from pipeline.delivery.telegram import TelegramDelivery
         from pipeline.database import Database
         from pipeline.config import settings
+        
+        db = Database(settings.database_url)
+        db.connect()
 
-        delivery = TelegramDelivery()
-        with Database(database_url=settings.database_url) as db:
-            db.init_tables()
+        for category in categories:
             digest = db.get_unsent_digest(category=category)
+            chats = db.get_active_subscribers(category=category)
             if not digest:
-                logger.info("No unsent digest found")
-                return
-            if delivery.deliver(digest['content']):
-                db.mark_digest_sent(digest['id'])
+                continue
+            
+            delivery = TelegramDelivery()
+            for chat in chats:
+                delivery.chat_id = chat["chat_id"]
+                delivery.deliver(digest["content"])
+                db.record_delivery(digest_id=digest["id"], chat_id=chat["chat_id"])
+
+                
+                
 
     if args.command == 'deliver':
-        deliver(category=args.category )
+        deliver(categories=[args.category])
 
     if args.command == 'schedule':
         from pipeline.scheduler import scheduled_run
@@ -76,7 +84,7 @@ def main():
             run_collect()
             for cat in ['tech', 'finance']:
                 summarize(category=cat)
-                deliver(category=cat)
+                deliver(categories=[cat])
 
         scheduled_run(pipeline_task)
 
