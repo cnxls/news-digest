@@ -38,13 +38,15 @@ def main():
         with Database(database_url=settings.database_url) as db:
             db.init_tables()
             articles = db.get_unsent(category=category)
+            if articles:
+                summary = aio.run(summarizer.summarize("\n\n".join(f"{a['title']}\n {a['summary']}" for a in articles)))
+                logger.info(f"Summarized {len(articles)} articles — {summary['tokens']['total']} tokens used")
 
-            summary = aio.run(summarizer.summarize("\n\n".join(f"{a['title']}\n {a['summary']}" for a in articles)))
-            logger.info(f"Summarized {len(articles)} articles — {summary['tokens']['total']} tokens used")
-
-            db.save_digest(summary['text'], category=category)
-            db.mark_as_sent(category=category)
-            logger.info("Digest saved and articles marked as sent")
+                db.save_digest(summary['text'], category=category)
+                db.mark_as_sent(category=category)
+                logger.info("Digest saved and articles marked as sent")
+            
+            return logger.info("No new articles collected.")
 
 
     if args.command == 'summarize':
