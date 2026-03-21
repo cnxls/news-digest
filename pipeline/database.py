@@ -198,3 +198,12 @@ class Database:
         with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute(sql, (categories, chat_id, ))
             return cur.fetchall()
+        
+    def get_active_subscribers(self, category):
+        sql = """SELECT chat_id 
+        FROM subscribers
+        WHERE %s = ANY(categories) 
+        AND is_active = TRUE"""
+        with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(sql, (category, ))
+            return cur.fetchall()
