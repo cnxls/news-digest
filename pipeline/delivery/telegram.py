@@ -36,7 +36,7 @@ class TelegramDelivery(BaseDelivery):
             payload = {
                 "chat_id":self.chat_id,
                 "text": chunk,
-                "parse_mode":"HTML"
+                "parse_mode":"Markdown"
             }
             response = requests.post(self.api_url,json=payload,timeout=20)
 

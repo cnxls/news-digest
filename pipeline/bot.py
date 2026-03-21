@@ -44,7 +44,7 @@ async def todays_digest(update, context):
         await update.message.reply_text("No new digests available.")
         return
     for digest in digests:
-        await update.message.reply_text(digest["content"])
+        await update.message.reply_text(digest["content"], parse_mode="Markdown")
         db.record_delivery(digest["id"], chat_id=chat_id)
 
 

@@ -7,6 +7,30 @@ import asyncio as aio
 
 logger = get_logger()
 
+SYSTEM_PROMPT = """You are a concise, engaging news analyst. Your job is to summarize news articles into a single Telegram message. Follow these formatting rules strictly:
+
+    FORMAT RULES:
+    - Use Telegram MarkdownV2-compatible formatting
+    - Use *bold* for key terms, names, and numbers
+    - Use _italic_ for context, commentary, or background info
+    - Use emojis as section markers (not excessively)
+    - Keep the total summary under 300 words
+    - End every response with exactly: <<<END>>>
+
+    STRUCTURE (follow this order):
+    1. 📰 *Headline* — a single bold sentence capturing the main story
+    2. Body — 2-4 short paragraphs summarizing the key points. Bold important facts. Use italic for analyst context or background.
+    3. 🔗 *Sources:* — list the source names (not URLs) as a compact citation line
+
+    STYLE:
+    - Write in a neutral, informative tone
+    - No filler, no greetings, no sign-offs
+    - Prefer short punchy sentences over long compound ones
+    - If multiple articles cover the same event, merge them into one coherent summary
+    - If articles cover different topics, separate them with a --- divider
+
+    OUTPUT MUST end with <<<END>>> on its own line. Do not write anything after it."""
+
 class Summarizer:
     def __init__(self,  provider_name: str = "anthropic"):
         self.provider, self.client = self.build_client(provider_name)
@@ -41,8 +65,10 @@ class Summarizer:
             message = await client.messages.create(
                 model=model,
                 max_tokens=1024,
-                system="You are an expert AI news curator. Your job is to produce a concise, informative summary of a news article about artificial intelligence or technology. Write 2-3 sentences that capture the key facts, why it matters, and any notable implications. Be factual, neutral in tone, and avoid marketing language. Output only the summary text with no preamble.",
-                messages=[{"role": "user", "content": question}]
+                system= SYSTEM_PROMPT,
+                stop_sequences=["<<<END>>>"],
+                messages=[{"role": "user", 
+                           "content": f"Summarize the following news articles for a Telegram digest:\n\n---\n\n{question}\n\n---"}]
             )
 
             return message
@@ -50,7 +76,7 @@ class Summarizer:
             message = await self.call_with_retry(_call)       
             
             result = {
-                "text": message.content[0].text,
+                "text": message.content[0].text.replace("<<<END>>>", "").strip(),
                 "model": message.model,
                 "tokens": {
                     "input": message.usage.input_tokens,
@@ -70,7 +96,7 @@ class Summarizer:
             message = await client.chat.completions.create(
                 model=model,
                 messages=[
-                    {"role": "system", "content": "You are an expert AI news curator. Your job is to produce a concise, informative summary of a news article about artificial intelligence or technology. Write 2-3 sentences that capture the key facts, why it matters, and any notable implications. Be factual, neutral in tone, and avoid marketing language. Output only the summary text with no preamble."},
+                    {"role": "system", "content": SYSTEM_PROMPT},
                     {"role": "user", "content": question}],
                 max_tokens=1024,
                 temperature=0.7
