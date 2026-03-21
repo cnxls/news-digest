@@ -15,10 +15,10 @@ async def subscribe(update, context):
     categories = context.args
 
     if not categories:
-        await update.message.reply_text("Use: /subscribe tech finance")
+        await update.message.reply_text("Use: /subscribe tech finance ...")
         return
     
-    valid = ["tech", "finance"]
+    valid = ["tech", "finance", "science", "world", "crypto", "startups"]
     not_valid = [c for c in categories if c not in valid]
     if not_valid:
         await update.message.reply_text(f"Unknown category : {not_valid}")
@@ -44,7 +44,7 @@ async def todays_digest(update, context):
         await update.message.reply_text("No new digests available.")
         return
     for digest in digests:
-        await update.message.reply_text(digest["content"], parse_mode="Markdown")
+        await update.message.reply_text(digest["content"], parse_mode="HTML")
         db.record_delivery(digest["id"], chat_id=chat_id)
 
 
