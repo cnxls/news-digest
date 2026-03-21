@@ -177,7 +177,8 @@ class Database:
         WHERE chat_id = (%s)"""
         with self.conn.cursor() as cur:
             cur.execute(sql, (chat_id,))
-            return cur.fetchone()
+            row = cur.fetchone()
+            return row[0] if row else None
 
     def record_delivery(self, digest_id, chat_id):
         sql = """INSERT INTO digest_deliveries (digest_id, chat_id)

@@ -12,10 +12,12 @@ async def start(update, context):
 
 async def subscribe(update, context):
     chat_id = update.effective_chat.id
+    
     categories = context.args
+    current_cats = db.get_categories(chat_id=chat_id)
 
     if not categories:
-        await update.message.reply_text("Use: /subscribe tech finance ...")
+        await update.message.reply_text("Use: /subscribe categories")
         return
     
     valid = ["tech", "finance", "science", "world", "crypto", "startups"]
@@ -24,7 +26,10 @@ async def subscribe(update, context):
         await update.message.reply_text(f"Unknown category : {not_valid}")
         return
     
-    db.update_categories(categories=categories, chat_id=chat_id)
+    resulting_list = list(current_cats)
+    resulting_list.extend(cat for cat in categories if cat not in resulting_list)
+    
+    db.update_categories(categories=resulting_list, chat_id=chat_id)
     await update.message.reply_text(f"Subscribed to : {', '.join(categories)}")
     
 
