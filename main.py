@@ -46,7 +46,8 @@ def main():
                 db.mark_as_sent(category=category)
                 logger.info("Digest saved and articles marked as sent")
             
-            return logger.info("No new articles collected.")
+            else:
+                return logger.info("No new articles collected.")
 
 
     if args.command == 'summarize':
@@ -81,13 +82,15 @@ def main():
     if args.command == 'schedule':
         from pipeline.scheduler import scheduled_run
         from pipeline.collectors import run_collect
-
+        import yaml
+        
         def pipeline_task():
+            with open("sources.yaml") as f:
+                sources = yaml.safe_load(f)
+                categories = list(sources["rss"].keys())    
             run_collect()
-            for cat in ['tech', 'finance']:
+            for cat in categories:
                 summarize(category=cat)
-                deliver(categories=[cat])
-
         scheduled_run(pipeline_task)
 
 
