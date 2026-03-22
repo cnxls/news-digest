@@ -1,8 +1,9 @@
 from apscheduler.schedulers.blocking import BlockingScheduler
+from datetime import datetime
 
-def scheduled_run(task, hour: int = 9, minute: int = 0):
+def scheduled_run(task):
     scheduler = BlockingScheduler()
 
-    scheduler.add_job(task, 'cron', hour=hour, minute=minute , id='morning_run')
+    scheduler.add_job(task, trigger='interval', hours = 8, id='pipeline_run', next_run_time=datetime.now())
     scheduler.start()
 
