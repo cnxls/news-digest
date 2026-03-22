@@ -14,7 +14,7 @@ async def subscribe(update, context):
     chat_id = update.effective_chat.id
     
     categories = context.args
-    current_cats = db.get_categories(chat_id=chat_id)
+    current_cats = db.get_categories(chat_id=chat_id) or []
 
     if not categories:
         await update.message.reply_text("Use: /subscribe categories")
