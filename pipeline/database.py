@@ -200,6 +200,18 @@ class Database:
             cur.execute(sql, (categories, chat_id, ))
             return cur.fetchall()
         
+    def get_todays_digest_by_category(self, category):
+        sql = """SELECT id, content, category, created_at
+        FROM digests
+        WHERE category = %s
+        AND created_at >= CURRENT_DATE
+        AND created_at < CURRENT_DATE + INTERVAL '1 day'
+        ORDER BY created_at DESC
+        LIMIT 1"""
+        with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute(sql, (category,))
+            return cur.fetchone()
+
     def get_active_subscribers(self, category):
         sql = """SELECT chat_id 
         FROM subscribers
