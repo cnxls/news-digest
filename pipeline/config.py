@@ -1,3 +1,5 @@
+import os
+import yaml
 from pydantic_settings import BaseSettings
 from pydantic import Field
 
@@ -18,4 +20,10 @@ class Settings(BaseSettings):
 
     max_articles_per_source: int = 10
 
-settings = Settings()   
+settings = Settings()
+
+def get_valid_categories():
+    sources_path = os.path.join(os.path.dirname(__file__), '..', 'sources.yaml')
+    with open(sources_path, 'r') as f:
+        sources = yaml.safe_load(f) or {}
+    return list(sources.get('rss', {}).keys())
