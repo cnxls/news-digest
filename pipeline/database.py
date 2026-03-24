@@ -189,13 +189,13 @@ class Database:
             self.conn.commit()
 
     def get_unsent_digest_for_user(self, categories, chat_id):
-        sql = """SELECT d.id, d.content, d.category
+        sql = """SELECT DISTINCT ON (d.category) d.id, d.content, d.category
         FROM digests d
         WHERE d.category = ANY(%s)
         AND d.id NOT IN (
             SELECT digest_id FROM digest_deliveries
             WHERE chat_id = %s)
-        ORDER BY d.created_at DESC """
+        ORDER BY d.category, d.created_at DESC """
         with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute(sql, (categories, chat_id, ))
             return cur.fetchall()
