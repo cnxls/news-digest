@@ -156,17 +156,18 @@ class Database:
 
     def remove_subscriber(self, chat_id):
         sql = """UPDATE subscribers
-        SET is_active = FALSE
+        SET is_active = FALSE, categories = '{}'
         WHERE chat_id = (%s)"""
         with self.conn.cursor() as cur:
             cur.execute(sql, (chat_id,))
             self.conn.commit()
 
     def update_categories(self, categories, chat_id):
-        sql = """UPDATE subscribers
-        SET categories = %s
-        WHERE chat_id = %s
-        AND is_active = TRUE"""
+        sql = """INSERT INTO subscribers (categories, chat_id, is_active)
+        VALUES (%s, %s, TRUE)
+        ON CONFLICT (chat_id) DO UPDATE
+        SET categories = EXCLUDED.categories,
+        is_active = TRUE"""
         with self.conn.cursor() as cur:
             cur.execute(sql, (categories, chat_id,))
             self.conn.commit()
@@ -174,7 +175,8 @@ class Database:
     def get_categories(self, chat_id):
         sql = """SELECT categories
         FROM subscribers
-        WHERE chat_id = (%s)"""
+        WHERE chat_id = (%s)
+        AND is_active = TRUE"""
         with self.conn.cursor() as cur:
             cur.execute(sql, (chat_id,))
             row = cur.fetchone()

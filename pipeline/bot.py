@@ -23,7 +23,7 @@ async def subscribe(update, context):
     valid = get_valid_categories()
     not_valid = [c for c in categories if c not in valid]
     if not_valid:
-        await update.message.reply_text(f"Unknown category : {not_valid}")
+        await update.message.reply_text(f"Unknown category: {', '.join(not_valid)}")
         return
     
     resulting_list = list(current_cats)
