@@ -28,7 +28,8 @@ CREATE TABLE IF NOT EXISTS digests (
     content       TEXT NOT NULL,
     created_at    TIMESTAMP DEFAULT NOW(),
     sent_at       TIMESTAMP,
-    category      TEXT
+    category      TEXT,
+    language      VARCHAR(2) DEFAULT 'en'
 );
 
 CREATE TABLE IF NOT EXISTS subscribers (
@@ -36,8 +37,12 @@ CREATE TABLE IF NOT EXISTS subscribers (
     chat_id       BIGINT UNIQUE,
     categories    TEXT[],
     is_active     BOOLEAN DEFAULT TRUE,
+    language      VARCHAR(2) DEFAULT 'en',
     created_at    TIMESTAMP DEFAULT NOW()
 );
+
+ALTER TABLE subscribers ADD COLUMN IF NOT EXISTS language VARCHAR(2) DEFAULT 'en';
+ALTER TABLE digests ADD COLUMN IF NOT EXISTS language VARCHAR(2) DEFAULT 'en';
 
 CREATE TABLE IF NOT EXISTS digest_deliveries (
     id          SERIAL PRIMARY KEY,
@@ -108,12 +113,12 @@ class Database:
             cur.execute(sql, (category,))
             self.conn.commit()
         
-    def save_digest(self, content: str, category: str) -> int:
-        sql = """INSERT INTO digests (content, category)
-        VALUES (%s, %s)
+    def save_digest(self, content: str, category: str, language: str = 'en') -> int:
+        sql = """INSERT INTO digests (content, category, language)
+        VALUES (%s, %s, %s)
         RETURNING id"""
         with self.conn.cursor() as cur:
-            cur.execute(sql, (content, category,))
+            cur.execute(sql, (content, category, language))
             digest_id = cur.fetchone()[0]
             self.conn.commit()
         return digest_id
@@ -127,14 +132,15 @@ class Database:
             cur.execute(sql)
             return cur.fetchall()
 
-    def get_unsent_digest(self, category: str):
+    def get_unsent_digest(self, category: str, language: str = 'en'):
         sql="""SELECT id, content, created_at
         FROM digests
         WHERE sent_at IS NULL
-        AND category = (%s)
+        AND category = %s
+        AND language = %s
         ORDER BY created_at DESC"""
         with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute(sql, (category,))
+            cur.execute(sql, (category, language))
             return cur.fetchone()
 
     def mark_digest_sent(self, digest_id):
@@ -193,32 +199,54 @@ class Database:
     def get_unsent_digest_for_user(self, categories, chat_id):
         sql = """SELECT DISTINCT ON (d.category) d.id, d.content, d.category
         FROM digests d
+        JOIN subscribers s ON s.chat_id = %s AND s.is_active = TRUE
         WHERE d.category = ANY(%s)
+        AND d.language = s.language
         AND d.id NOT IN (
             SELECT digest_id FROM digest_deliveries
             WHERE chat_id = %s)
         ORDER BY d.category, d.created_at DESC """
         with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute(sql, (categories, chat_id, ))
+            cur.execute(sql, (chat_id, categories, chat_id))
             return cur.fetchall()
         
-    def get_todays_digest_by_category(self, category):
+    def get_todays_digest_by_category(self, category, language='en'):
         sql = """SELECT id, content, category, created_at
         FROM digests
         WHERE category = %s
+        AND language = %s
         AND created_at >= CURRENT_DATE
         AND created_at < CURRENT_DATE + INTERVAL '1 day'
         ORDER BY created_at DESC
         LIMIT 1"""
         with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute(sql, (category,))
+            cur.execute(sql, (category, language))
             return cur.fetchone()
 
-    def get_active_subscribers(self, category):
-        sql = """SELECT chat_id 
+    def get_active_subscribers(self, category, language='en'):
+        sql = """SELECT chat_id
         FROM subscribers
-        WHERE %s = ANY(categories) 
+        WHERE %s = ANY(categories)
+        AND language = %s
         AND is_active = TRUE"""
         with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
-            cur.execute(sql, (category, ))
+            cur.execute(sql, (category, language))
             return cur.fetchall()
+        
+    def update_language(self, language, chat_id):
+        sql = """UPDATE subscribers
+        SET language = %s
+        WHERE chat_id = %s"""
+        with self.conn.cursor() as cur:
+            cur.execute(sql, (language, chat_id))
+            self.conn.commit()
+
+    def get_language(self, chat_id):
+        sql = """SELECT language
+        FROM subscribers
+        WHERE chat_id = %s
+        AND is_active = TRUE"""
+        with self.conn.cursor() as cur:
+            cur.execute(sql, (chat_id,))
+            row = cur.fetchone()
+            return row[0] if row else 'en'
