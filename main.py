@@ -27,7 +27,9 @@ def main():
         articles = run_collect(category=args.category)
         logger.info(f"Pipeline complete: {len(articles)} articles collected")
 
-    def summarize(category):
+    SUPPORTED_LANGUAGES = ['en', 'uk']
+
+    def summarize_all_languages(category):
         import asyncio as aio
         from pipeline.summarizer import Summarizer
         from pipeline.database import Database
@@ -38,40 +40,41 @@ def main():
         with Database(database_url=settings.database_url) as db:
             db.init_tables()
             articles = db.get_unsent(category=category)
-            if articles:
-                summary = aio.run(summarizer.summarize("\n\n".join(f"{a['title']}\n {a['summary']}" for a in articles)))
-                logger.info(f"Summarized {len(articles)} articles — {summary['tokens']['total']} tokens used")
+            if not articles:
+                logger.info("No new articles collected.")
+                return
 
-                db.save_digest(summary['text'], category=category)
-                db.mark_as_sent(category=category)
-                logger.info("Digest saved and articles marked as sent")
-            
-            else:
-                return logger.info("No new articles collected.")
-
+            article_text = "\n\n".join(f"{a['title']}\n {a['summary']}" for a in articles)
+            for lang in SUPPORTED_LANGUAGES:
+                summary = aio.run(summarizer.summarize(article_text, language=lang))
+                logger.info(f"Summarized {len(articles)} articles ({lang}) — {summary['tokens']['total']} tokens used")
+                db.save_digest(summary['text'], category=category, language=lang)
+                logger.info(f"Digest saved ({lang})")
+            db.mark_as_sent(category=category)
+            logger.info("Articles marked as sent")
 
     if args.command == 'summarize':
-        summarize(category=args.category)
+        summarize_all_languages(category=args.category)
 
     def deliver(categories):
         from pipeline.delivery.telegram import TelegramDelivery
         from pipeline.database import Database
         from pipeline.config import settings
-        
+
         db = Database(settings.database_url)
         db.connect()
 
         for category in categories:
-            digest = db.get_unsent_digest(category=category)
-            chats = db.get_active_subscribers(category=category)
-            if not digest:
-                continue
-            
-            delivery = TelegramDelivery()
-            for chat in chats:
-                delivery.chat_id = chat["chat_id"]
-                delivery.deliver(digest["content"])
-                db.record_delivery(digest_id=digest["id"], chat_id=chat["chat_id"])
+            for language in SUPPORTED_LANGUAGES:
+                digest = db.get_unsent_digest(category=category, language=language)
+                if not digest:
+                    continue
+                chats = db.get_active_subscribers(category=category, language=language)
+                delivery = TelegramDelivery()
+                for chat in chats:
+                    delivery.chat_id = chat["chat_id"]
+                    delivery.deliver(digest["content"])
+                    db.record_delivery(digest_id=digest["id"], chat_id=chat["chat_id"])
 
                 
                 
@@ -87,10 +90,10 @@ def main():
         def pipeline_task():
             with open("sources.yaml") as f:
                 sources = yaml.safe_load(f)
-                categories = list(sources["rss"].keys())    
+                categories = list(sources["rss"].keys())
             run_collect()
             for cat in categories:
-                summarize(category=cat)
+                summarize_all_languages(category=cat)
         scheduled_run(pipeline_task)
 
 
