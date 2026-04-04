@@ -5,6 +5,9 @@ from pipeline.config import settings, get_valid_categories
 db = Database(settings.database_url)
 app = Application.builder().token(settings.telegram_bot_token).build()
 
+VALID_LANGUAGES = {'eng': 'en', 'ukr': 'uk'}
+LANGUAGE_LABELS = {'en': 'English', 'uk': 'Ukrainian'}
+
 async def start(update, context):
     chat_id = update.effective_chat.id
     db.add_subscriber(chat_id=chat_id)
@@ -75,6 +78,7 @@ async def todays_digest(update, context):
         await update.message.reply_text("No categories selected. Use /subscribe to choose.")
         return
 
+    lang = db.get_language(chat_id=chat_id)
     valid = get_valid_categories()
 
     if context.args:
@@ -85,7 +89,7 @@ async def todays_digest(update, context):
         if category not in categories:
             await update.message.reply_text(f"You're not subscribed to '{category}'. Use /subscribe {category} first.")
             return
-        digest = db.get_todays_digest_by_category(category)
+        digest = db.get_todays_digest_by_category(category, language=lang)
         if not digest:
             await update.message.reply_text(f"No digest for '{category}' today yet.")
             return
@@ -108,6 +112,7 @@ async def help(update, context):
         "/subscribe &lt;categories&gt; — Subscribe to topics\n"
         "/unsubscribe — Unsubscribe from all updates\n"
         "/digest &lt;category&gt; — Get today's latest digest (or all unsent if no category)\n"
+        "/language &lt;eng|ukr&gt; — Set digest language\n"
         "/mysubs — View your current subscriptions\n"
         "/help — Show this message\n\n"
         f"<b>Categories:</b> {', '.join(get_valid_categories())}\n\n"
@@ -115,20 +120,47 @@ async def help(update, context):
         parse_mode="HTML"
     )
 
+async def language(update, context):
+    chat_id = update.effective_chat.id
+    if not context.args:
+        current = db.get_language(chat_id=chat_id)
+        label = LANGUAGE_LABELS.get(current, current)
+        await update.message.reply_text(
+            f"Current language: {label}\n"
+            f"Usage: /language eng or /language ukr"
+        )
+        return
+
+    choice = context.args[0].lower()
+    if choice not in VALID_LANGUAGES:
+        await update.message.reply_text(
+            f"Unknown language: {choice}\n"
+            f"Available: {', '.join(VALID_LANGUAGES.keys())}"
+        )
+        return
+
+    lang_code = VALID_LANGUAGES[choice]
+    db.update_language(language=lang_code, chat_id=chat_id)
+    label = LANGUAGE_LABELS[lang_code]
+    await update.message.reply_text(f"Language set to {label}.")
+
 async def mysubs(update, context):
     chat_id = update.effective_chat.id
     categories = db.get_categories(chat_id=chat_id)
     if not categories:
         await update.message.reply_text("You have no active subscriptions.\nUse /subscribe to choose topics.")
-        return 
+        return
+    lang = db.get_language(chat_id=chat_id)
+    label = LANGUAGE_LABELS.get(lang, lang)
     cat_list = "\n".join(f"  • {c}" for c in categories)
-    await update.message.reply_text(f"You are subscribed to : \n\n{cat_list}")
+    await update.message.reply_text(f"You are subscribed to:\n\n{cat_list}\n\nLanguage: {label}")
 
 
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("subscribe", subscribe))
 app.add_handler(CommandHandler("unsubscribe", unsubscribe))
 app.add_handler(CommandHandler("digest", todays_digest))
+app.add_handler(CommandHandler("language", language))
 app.add_handler(CommandHandler("help", help))
 app.add_handler(CommandHandler("mysubs", mysubs))
 
