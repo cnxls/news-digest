@@ -7,13 +7,20 @@ import asyncio as aio
 
 logger = get_logger()
 
-SYSTEM_PROMPT = """You are a concise, engaging news analyst. Your job is to summarize ALL provided news articles into ONE cohesive Telegram message. Follow these formatting rules strictly:
+LANGUAGE_INSTRUCTIONS = {
+    'en': '',
+    'uk': '\n    IMPORTANT: Write the ENTIRE digest in Ukrainian (Українська). All headlines, body text, TL;DR, and labels must be in Ukrainian.',
+}
+
+def build_system_prompt(language='en'):
+    lang_instruction = LANGUAGE_INSTRUCTIONS.get(language, '')
+    return f"""You are a concise, engaging news analyst. Your job is to summarize ALL provided news articles into ONE cohesive Telegram message. Follow these formatting rules strictly:
 
     FORMAT RULES:
     - Use Telegram HTML formatting: <b>bold</b>, <i>italic</i>, <blockquote>blockquote</blockquote>
     - Use emojis naturally in the text to make it visually engaging
     - Keep the total summary under 200 words
-    - End every response with exactly: <<<END>>>
+    - End every response with exactly: <<<END>>>{lang_instruction}
 
     STRUCTURE (follow this exact order):
 
@@ -66,14 +73,15 @@ class Summarizer:
         elif provider_name == "openai":
             return "openai", AsyncOpenAI(api_key=settings.openai_api_key)
 
-    async def ask_anthropic(self, client: AsyncAnthropic, question: str, model: str = 'claude-haiku-4-5') -> Dict[str, Any]:
+    async def ask_anthropic(self, client: AsyncAnthropic, question: str, language: str = 'en', model: str = 'claude-haiku-4-5') -> Dict[str, Any]:
+        system_prompt = build_system_prompt(language)
         async def _call():
             message = await client.messages.create(
                 model=model,
                 max_tokens=1024,
-                system= SYSTEM_PROMPT,
+                system=system_prompt,
                 stop_sequences=["<<<END>>>"],
-                messages=[{"role": "user", 
+                messages=[{"role": "user",
                            "content": f"Summarize the following news articles for a Telegram digest:\n\n---\n\n{question}\n\n---"}]
             )
 
@@ -97,12 +105,13 @@ class Summarizer:
         except APIError as e:
             raise
 
-    async def ask_openai(self, client: AsyncOpenAI, question: str, model: str = 'gpt-4o-mini') -> Dict[str, Any]:
+    async def ask_openai(self, client: AsyncOpenAI, question: str, language: str = 'en', model: str = 'gpt-4o-mini') -> Dict[str, Any]:
+        system_prompt = build_system_prompt(language)
         async def _call():
             message = await client.chat.completions.create(
                 model=model,
                 messages=[
-                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "system", "content": system_prompt},
                     {"role": "user", "content": question}],
                 max_tokens=1024,
                 temperature=0.7
@@ -128,10 +137,10 @@ class Summarizer:
         except RateLimitError as e:
             raise
 
-    async def summarize(self, articles):
-        logger.info(f"Summarizing with {self.provider}")
+    async def summarize(self, articles, language='en'):
+        logger.info(f"Summarizing with {self.provider} (language={language})")
         if self.provider == 'anthropic':
-            return await self.ask_anthropic(self.client, question=articles)
+            return await self.ask_anthropic(self.client, question=articles, language=language)
 
         elif self.provider == 'openai':
-            return await self.ask_openai(self.client, question=articles)
+            return await self.ask_openai(self.client, question=articles, language=language)
