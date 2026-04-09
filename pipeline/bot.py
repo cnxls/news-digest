@@ -15,16 +15,15 @@ LANGUAGE_LABELS = {'en': 'English', 'uk': 'Ukrainian'}
 async def start(update, context):
     chat_id = update.effective_chat.id
     db.add_subscriber(chat_id=chat_id)
-    message = f"""Welcome to News Digest!
-       I collect and summarize news from across the web and deliver it here.
-
-       Available topics:
-        {CAT_LIST}
-
-       👉 To get started: /subscribe tech finance etc.
-       👉 Set your language: /language eng or /language ukr
-       👉 See all commands: /help"""
-    await update.message.reply_text(message)
+    message = (
+        "📰 <b>Welcome to News Digest!</b>\n"
+        "I collect and summarize news from across the web and deliver it here.\n\n"
+        f"<b>Available topics:</b>\n{CAT_LIST}\n\n"
+        "👉 To get started: <code>/subscribe tech finance</code>\n"
+        "👉 Set your language: <code>/language eng</code> or <code>/language ukr</code>\n"
+        "👉 See all commands: /help"
+    )
+    await update.message.reply_text(message, parse_mode="HTML")
 
 async def subscribe(update, context):
     chat_id = update.effective_chat.id
@@ -33,10 +32,10 @@ async def subscribe(update, context):
     current_cats = db.get_categories(chat_id=chat_id) or []
 
     if not categories:
-        await update.message.reply_text(f"""Please specify categories. 
-                                        Available:
-                                        {CAT_LIST}
-                                        Example: /subscribe tech finance""")
+        await update.message.reply_text(
+            f"Please specify categories.\n\n<b>Available:</b>\n{CAT_LIST}\n\n<i>Example:</i> <code>/subscribe tech finance</code>",
+            parse_mode="HTML"
+        )
         return
     
     valid = get_valid_categories()
@@ -127,12 +126,14 @@ async def status(update, context):
     user_cat_list = ", ".join(current_cats) if current_cats else "None — use /subscribe to choose"
     user_language = LANGUAGE_LABELS.get(db.get_language(chat_id), "English")
     user_unsent_digest = len(db.get_unsent_digest_for_user(current_cats, chat_id)) if current_cats else 0
-    message = f"""📊 Your Status
-       Subscriptions: {user_cat_list}
-       Language: {user_language}
-       Digests waiting: {user_unsent_digest} → use /digest to read them
-       Schedule: refreshed every 8 hours"""
-    await update.message.reply_text(message)
+    message = (
+        "📊 <b>Your Status</b>\n\n"
+        f"Subscriptions: <b>{user_cat_list}</b>\n"
+        f"Language: {user_language}\n"
+        f"Digests waiting: <b>{user_unsent_digest}</b> → use /digest to read them\n"
+        "Schedule: refreshed every 8 hours"
+    )
+    await update.message.reply_text(message, parse_mode="HTML")
 
 async def help(update, context):
     await update.message.reply_text(
@@ -142,6 +143,7 @@ async def help(update, context):
         "/unsubscribe — Unsubscribe from all updates\n"
         "/digest &lt;category&gt; — Get today's latest digest (or all unsent if no category)\n"
         "/language &lt;eng|ukr&gt; — Set digest language\n"
+        "/status — Your subscriptions and pending digests\n"
         "/mysubs — View your current subscriptions\n"
         "/help — Show this message\n\n"
         f"<b>Categories:</b> {', '.join(get_valid_categories())}\n\n"
@@ -192,6 +194,7 @@ app.add_handler(CommandHandler("digest", todays_digest))
 app.add_handler(CommandHandler("language", language))
 app.add_handler(CommandHandler("help", help))
 app.add_handler(CommandHandler("mysubs", mysubs))
+app.add_handler(CommandHandler("status", status))
 
 if __name__ == "__main__":
     db.connect()
