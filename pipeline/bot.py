@@ -1,4 +1,5 @@
-from telegram.ext import Application,CommandHandler
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import Application, CommandHandler, CallbackQueryHandler
 from pipeline.database import Database
 from pipeline.config import settings, get_valid_categories
 
@@ -18,12 +19,10 @@ async def start(update, context):
     message = (
         "📰 <b>Welcome to News Digest!</b>\n"
         "I collect and summarize news from across the web and deliver it here.\n\n"
-        f"<b>Available topics:</b>\n{CAT_LIST}\n\n"
-        "👉 To get started: <code>/subscribe tech finance</code>\n"
-        "👉 Set your language: <code>/language eng</code> or <code>/language ukr</code>\n"
-        "👉 See all commands: /help"
+        "👇 Pick your topics to get started:"
     )
-    await update.message.reply_text(message, parse_mode="HTML")
+    buttons = [[InlineKeyboardButton(cat, callback_data=f"sub:{cat}")] for cat in get_valid_categories()]
+    await update.message.reply_text(message, parse_mode="HTML", reply_markup=InlineKeyboardMarkup(buttons))
 
 async def subscribe(update, context):
     chat_id = update.effective_chat.id
