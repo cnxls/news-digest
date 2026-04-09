@@ -155,9 +155,14 @@ async def language(update, context):
     if not context.args:
         current = db.get_language(chat_id=chat_id)
         label = LANGUAGE_LABELS.get(current, current)
+        buttons = [[
+            InlineKeyboardButton("🇬🇧 English", callback_data="lang:en"),
+            InlineKeyboardButton("🇺🇦 Ukrainian", callback_data="lang:uk"),
+        ]]
         await update.message.reply_text(
-            f"Current language: {label}\n"
-            f"Usage: /language eng or /language ukr"
+            f"Current language: <b>{label}</b>\nChoose a language:",
+            parse_mode="HTML",
+            reply_markup=InlineKeyboardMarkup(buttons)
         )
         return
 
