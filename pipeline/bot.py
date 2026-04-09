@@ -191,6 +191,35 @@ async def mysubs(update, context):
     await update.message.reply_text(f"You are subscribed to:\n\n{cat_list}\n\nLanguage: {label}")
 
 
+async def handle_lang_cb(update, context):
+    query = update.callback_query
+    await query.answer()
+
+    lang_code = query.data.split(":")[1]
+    db.update_language(language=lang_code, chat_id=query.message.chat_id)
+    label = LANGUAGE_LABELS[lang_code]
+
+    await query.edit_message_text(f"✅ Language set to <b>{label}</b>.", parse_mode="HTML")
+
+
+async def handle_sub_cb(update, context):
+    query = update.callback_query
+    await query.answer()
+
+    chat_id = query.message.chat_id
+    cat = query.data.split(":")[1]
+    current_cats = db.get_categories(chat_id=chat_id) or []
+
+    if cat not in current_cats:
+        current_cats = current_cats + [cat]
+        db.update_categories(categories=current_cats, chat_id=chat_id)
+
+    await query.edit_message_text(
+        f"✅ Subscribed to <b>{cat}</b>.\nActive subscriptions: {', '.join(current_cats)}\n\nUse /subscribe to add more.",
+        parse_mode="HTML"
+    )
+
+
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("subscribe", subscribe))
 app.add_handler(CommandHandler("unsubscribe", unsubscribe))
@@ -199,6 +228,8 @@ app.add_handler(CommandHandler("language", language))
 app.add_handler(CommandHandler("help", help))
 app.add_handler(CommandHandler("mysubs", mysubs))
 app.add_handler(CommandHandler("status", status))
+app.add_handler(CallbackQueryHandler(handle_lang_cb, pattern="^lang:"))
+app.add_handler(CallbackQueryHandler(handle_sub_cb, pattern="^sub:"))
 
 if __name__ == "__main__":
     db.connect()
