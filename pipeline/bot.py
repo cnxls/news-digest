@@ -4,14 +4,27 @@ from pipeline.config import settings, get_valid_categories
 
 db = Database(settings.database_url)
 app = Application.builder().token(settings.telegram_bot_token).build()
+categories = get_valid_categories()
 
+CAT_LIST = "\n".join(f" • {cat}" for cat in categories)
 VALID_LANGUAGES = {'eng': 'en', 'ukr': 'uk'}
 LANGUAGE_LABELS = {'en': 'English', 'uk': 'Ukrainian'}
+
+
 
 async def start(update, context):
     chat_id = update.effective_chat.id
     db.add_subscriber(chat_id=chat_id)
-    await update.message.reply_text("Hi! Use /subscribe ... to pick topics.")
+    message = f"""Welcome to News Digest!
+       I collect and summarize news from across the web and deliver it here.
+
+       Available topics:
+        {CAT_LIST}
+
+       👉 To get started: /subscribe tech finance etc.
+       👉 Set your language: /language eng or /language ukr
+       👉 See all commands: /help"""
+    await update.message.reply_text(message)
 
 async def subscribe(update, context):
     chat_id = update.effective_chat.id
@@ -20,7 +33,10 @@ async def subscribe(update, context):
     current_cats = db.get_categories(chat_id=chat_id) or []
 
     if not categories:
-        await update.message.reply_text("Use: /subscribe categories")
+        await update.message.reply_text(f"""Please specify categories. 
+                                        Available:
+                                        {CAT_LIST}
+                                        Example: /subscribe tech finance""")
         return
     
     valid = get_valid_categories()
@@ -33,8 +49,8 @@ async def subscribe(update, context):
     resulting_list.extend(cat for cat in categories if cat not in resulting_list)
     
     db.update_categories(categories=resulting_list, chat_id=chat_id)
-    await update.message.reply_text(f"Subscribed to : {', '.join(categories)}")
-    
+    await update.message.reply_text(f"""Subscribed to : {', '.join(categories)}
+                                        Your active subscribtions:{" ,".join(current_cats)}""")
 
 
 async def unsubscribe(update, context):
@@ -104,6 +120,19 @@ async def todays_digest(update, context):
     for digest in digests:
         await update.message.reply_text(digest["content"], parse_mode="HTML")
         db.record_delivery(digest["id"], chat_id=chat_id)
+
+async def status(update, context):
+    chat_id = update.effective_chat.id
+    current_cats = db.get_categories(chat_id) or []
+    user_cat_list = ", ".join(current_cats) if current_cats else "None — use /subscribe to choose"
+    user_language = LANGUAGE_LABELS.get(db.get_language(chat_id), "English")
+    user_unsent_digest = len(db.get_unsent_digest_for_user(current_cats, chat_id)) if current_cats else 0
+    message = f"""📊 Your Status
+       Subscriptions: {user_cat_list}
+       Language: {user_language}
+       Digests waiting: {user_unsent_digest} → use /digest to read them
+       Schedule: refreshed every 8 hours"""
+    await update.message.reply_text(message)
 
 async def help(update, context):
     await update.message.reply_text(
