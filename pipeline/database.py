@@ -178,7 +178,7 @@ class Database:
             cur.execute(sql, (categories, chat_id,))
             self.conn.commit()
 
-    def get_categories(self, chat_id):
+    def get_user_subscribtions(self, chat_id):
         sql = """SELECT categories
         FROM subscribers
         WHERE chat_id = (%s)
