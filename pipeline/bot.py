@@ -64,8 +64,12 @@ async def unsubscribe(update, context):
     categories_to_remove = context.args
 
     if not categories_to_remove:
-        db.remove_subscriber(chat_id)
-        await update.message.reply_text("Unsubscribed from all topics.\nUse /start to come back anytime.")
+        buttons = [[      
+      InlineKeyboardButton("Yes", callback_data="unsub:confirm"),
+      InlineKeyboardButton("No", callback_data="unsub:cancel")
+  ]]
+        await update.message.reply_text("Are you sure you want to unsubscribe from all the categories?",
+                                        reply_markup = InlineKeyboardMarkup(buttons))
         return
 
     valid = get_valid_categories()
@@ -218,8 +222,32 @@ async def handle_sub_cb(update, context):
         parse_mode="HTML"
     )
 
-async def handle_sub_cb(update, context):
-    ...
+async def handle_unsub_cb(update, context):
+    query = update.callback_query
+    await query.answer()
+
+    chat_id = query.message.chat_id
+    ans = query.data.split(":")[1]
+    current_cats = db.get_user_subscribtions(chat_id=chat_id) or []
+    if ans == "confirm":
+        if not current_cats:
+            await query.edit_message_text(f" You've not subscribed to any category yet. Choose category to suscribe first: /subscribe",parse_mode="HTML") 
+            return 
+        
+        else:
+            db.update_categories([],chat_id=chat_id)
+
+            await query.edit_message_text(
+            f"Unsubed",
+            parse_mode="HTML"
+        )
+    
+    else:
+        await query.edit_message_text(
+            f"cancelled",
+            parse_mode="HTML"
+        )
+
 
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("subscribe", subscribe))
