@@ -26,9 +26,18 @@ async def start(update, context):
 
 async def subscribe(update, context):
     chat_id = update.effective_chat.id
-    
-    categories = context.args
+    categories = get_valid_categories()
+    selected_categories = context.args
     current_cats = db.get_user_subscribtions(chat_id=chat_id) or []
+
+    if not context.args:
+        buttons = [[InlineKeyboardButton(cat, callback_data=f"sub:{cat}")] for cat in get_valid_categories()]
+        await update.message.reply_text(
+            f"Current subscribtions: <b>{current_cats}</b>\nChoose category to subscribe to:",
+            parse_mode="HTML",
+            reply_markup=InlineKeyboardMarkup(buttons)
+        )
+        return
 
     if not categories:
         await update.message.reply_text(
@@ -142,7 +151,6 @@ async def help(update, context):
         "/digest &lt;category&gt; — Get today's latest digest (or all unsent if no category)\n"
         "/language &lt;eng|ukr&gt; — Set digest language\n"
         "/status — Your subscriptions and pending digests\n"
-        "/mysubs — View your current subscriptions\n"
         "/help — Show this message\n\n"
         f"<b>Categories:</b> {', '.join(get_valid_categories())}\n\n"
         "<i>Example:</i> /subscribe tech finance crypto",
@@ -178,18 +186,6 @@ async def language(update, context):
     label = LANGUAGE_LABELS[lang_code]
     await update.message.reply_text(f"Language set to {label}.")
 
-async def mysubs(update, context):
-    chat_id = update.effective_chat.id
-    categories = db.get_user_subscribtions(chat_id=chat_id)
-    if not categories:
-        await update.message.reply_text("You have no active subscriptions.\nUse /subscribe to choose topics.")
-        return
-    lang = db.get_language(chat_id=chat_id)
-    label = LANGUAGE_LABELS.get(lang, lang)
-    cat_list = "\n".join(f"  • {c}" for c in categories)
-    await update.message.reply_text(f"You are subscribed to:\n\n{cat_list}\n\nLanguage: {label}")
-
-
 async def handle_lang_cb(update, context):
     query = update.callback_query
     await query.answer()
@@ -212,12 +208,18 @@ async def handle_sub_cb(update, context):
     if cat not in current_cats:
         current_cats = current_cats + [cat]
         db.update_categories(categories=current_cats, chat_id=chat_id)
-
+    
+    else :
+        await query.edit_message_text(f" Already subscribed to {cat}. Choose another category",parse_mode="HTML") 
+        return 
+    
     await query.edit_message_text(
         f"✅ Subscribed to <b>{cat}</b>.\nActive subscriptions: {', '.join(current_cats)}\n\nUse /subscribe to add more.",
         parse_mode="HTML"
     )
 
+async def handle_sub_cb(update, context):
+    ...
 
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("subscribe", subscribe))
@@ -225,10 +227,10 @@ app.add_handler(CommandHandler("unsubscribe", unsubscribe))
 app.add_handler(CommandHandler("digest", todays_digest))
 app.add_handler(CommandHandler("language", language))
 app.add_handler(CommandHandler("help", help))
-app.add_handler(CommandHandler("mysubs", mysubs))
 app.add_handler(CommandHandler("status", status))
 app.add_handler(CallbackQueryHandler(handle_lang_cb, pattern="^lang:"))
 app.add_handler(CallbackQueryHandler(handle_sub_cb, pattern="^sub:"))
+app.add_handler(CallbackQueryHandler(handle_unsub_cb, pattern="^unsub:"))
 
 if __name__ == "__main__":
     db.connect()
