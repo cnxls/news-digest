@@ -231,20 +231,20 @@ async def handle_unsub_cb(update, context):
     current_cats = db.get_user_subscribtions(chat_id=chat_id) or []
     if ans == "confirm":
         if not current_cats:
-            await query.edit_message_text(f" You've not subscribed to any category yet. Choose category to suscribe first: /subscribe",parse_mode="HTML") 
-            return 
-        
+            await query.edit_message_text("You have no active subscriptions.\nUse /subscribe to choose topics.", parse_mode="HTML")
+            return
+
         else:
-            db.update_categories([],chat_id=chat_id)
+            db.update_categories([], chat_id=chat_id)
 
             await query.edit_message_text(
-            f"Unsubed",
-            parse_mode="HTML"
-        )
-    
+                "✅ Unsubscribed from all topics.\nUse /start to come back anytime.",
+                parse_mode="HTML"
+            )
+
     else:
         await query.edit_message_text(
-            f"cancelled",
+            "Cancelled. Your subscriptions are unchanged.",
             parse_mode="HTML"
         )
 
