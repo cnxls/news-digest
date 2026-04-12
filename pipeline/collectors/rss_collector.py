@@ -1,6 +1,5 @@
 import feedparser
 from pipeline.models import Article
-from pipeline.config import settings
 from pipeline.collectors.base import BaseCollector
 from pipeline.logger import get_logger
 
@@ -21,9 +20,12 @@ class RssCollector(BaseCollector):
         return articles
 
     def rss_feed_parse(self, url : str, name: str, number_of_news : int = 50):
-        feed = feedparser.parse(url)
+        try:
+            feed = feedparser.parse(url)
+        except Exception as e:
+            logger.error(f"Failed to fetch feed {name}: {e}")
+            return []       
         news_items = []
-        
         for entry in feed.entries[:number_of_news]:  
             item = Article(category= self.category,
                             title=entry.title,
@@ -34,9 +36,3 @@ class RssCollector(BaseCollector):
             
             news_items.append(item)
         return news_items
-
-if __name__ == "__main__":
-    collector = RssCollector(feeds=settings.rss_feeds)
-    articles = collector.collect()
-    for article in articles:
-        print(article.model_dump())

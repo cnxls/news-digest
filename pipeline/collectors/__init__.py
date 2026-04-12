@@ -11,8 +11,12 @@ logger = get_logger()
 def run_collect(category = None):
     sources_path = os.path.join(os.path.dirname(__file__), '..', '..', 'sources.yaml')
 
-    with open(sources_path, 'r') as f:
-        sources = yaml.safe_load(f) or {}
+    try:                                                                                                                                                                                                                     
+        with open(sources_path, 'r') as f:
+            sources = yaml.safe_load(f) or {}                                                                                                                                                                                
+    except FileNotFoundError:
+        logger.error("sources.yaml not found")
+        return []
 
     articles = []
 
@@ -29,10 +33,15 @@ def run_collect(category = None):
     articles = process(articles)
     logger.info(f"After processing: {len(articles)} articles")
 
-    with Database(settings.database_url) as db:
-        db.init_tables()
-        saved = db.save_articles(articles)
-        logger.info(f"Saved {saved} new articles to database")
+    try:
+        with Database(settings.database_url) as db:
+            db.init_tables()
+            saved = db.save_articles(articles)
+            logger.info(f"Saved {saved} new articles to database")
+    except Exception as e:
+        logger.error(f"Database error: {e}")
+        return []
+
 
     return articles
 
