@@ -230,7 +230,7 @@ async def handle_sub_cb(update, context):
             return
 
     await query.edit_message_text(
-        f"✅ Subscribed to <b>{cat}</b>.\nActive subscriptions: {', '.join(current_cats)}\n\nUse /subscribe to add more.",
+        f"✅ Subscribed to <b>{cat}</b>.\nActive subscriptions: {', '.join(current_cats)}\n\nUse /subscribe to add more or /digest to read today's news.",
         parse_mode="HTML"
     )
 
