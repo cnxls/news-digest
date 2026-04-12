@@ -28,7 +28,7 @@ async def subscribe(update, context):
     chat_id = update.effective_chat.id
     categories = get_valid_categories()
     selected_categories = context.args
-    current_cats = db.get_user_subscribtions(chat_id=chat_id) or []
+    current_cats = db.get_user_subscriptions(chat_id=chat_id) or []
 
     if not context.args:
         buttons = [[InlineKeyboardButton(cat, callback_data=f"sub:{cat}")] for cat in get_valid_categories()]
@@ -78,7 +78,7 @@ async def unsubscribe(update, context):
         await update.message.reply_text(f"Unknown categories: {', '.join(not_valid)}")
         return
 
-    current = db.get_user_subscribtions(chat_id=chat_id)
+    current = db.get_user_subscriptions(chat_id=chat_id)
     if not current:
         await update.message.reply_text("You have no active subscriptions.")
         return
@@ -99,7 +99,7 @@ async def unsubscribe(update, context):
 
 async def todays_digest(update, context):
     chat_id = update.effective_chat.id
-    categories = db.get_user_subscribtions(chat_id=chat_id)
+    categories = db.get_user_subscriptions(chat_id=chat_id)
     if not categories:
         await update.message.reply_text("No categories selected. Use /subscribe to choose.")
         return
@@ -133,7 +133,7 @@ async def todays_digest(update, context):
 
 async def status(update, context):
     chat_id = update.effective_chat.id
-    current_cats = db.get_user_subscribtions(chat_id) or []
+    current_cats = db.get_user_subscriptions(chat_id) or []
     user_cat_list = ", ".join(current_cats) if current_cats else "None — use /subscribe to choose"
     user_language = LANGUAGE_LABELS.get(db.get_language(chat_id), "English")
     user_unsent_digest = len(db.get_unsent_digest_for_user(current_cats, chat_id)) if current_cats else 0
@@ -207,7 +207,7 @@ async def handle_sub_cb(update, context):
 
     chat_id = query.message.chat_id
     cat = query.data.split(":")[1]
-    current_cats = db.get_user_subscribtions(chat_id=chat_id) or []
+    current_cats = db.get_user_subscriptions(chat_id=chat_id) or []
 
     if cat not in current_cats:
         current_cats = current_cats + [cat]
@@ -228,7 +228,7 @@ async def handle_unsub_cb(update, context):
 
     chat_id = query.message.chat_id
     ans = query.data.split(":")[1]
-    current_cats = db.get_user_subscribtions(chat_id=chat_id) or []
+    current_cats = db.get_user_subscriptions(chat_id=chat_id) or []
     if ans == "confirm":
         if not current_cats:
             await query.edit_message_text("You have no active subscriptions.\nUse /subscribe to choose topics.", parse_mode="HTML")
