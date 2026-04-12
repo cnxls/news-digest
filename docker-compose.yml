@@ -25,16 +25,5 @@ services:
         condition: service_healthy
     command: ["python", "-m", "pipeline.bot"]
 
-  scheduler:
-    build: .
-    restart: unless-stopped
-    env_file: .env
-    environment:
-      DATABASE_URL: postgresql://postgres:${DB_PASSWORD}@db:5432/newsdigest
-    depends_on:
-      db:
-        condition: service_healthy
-    command: ["python", "main.py", "schedule"]
-
 volumes:
   postgres_data:

@@ -1,7 +1,11 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler
+from apscheduler.schedulers.background import BackgroundScheduler
 from pipeline.database import Database
 from pipeline.config import settings, get_valid_categories
+from pipeline.logger import get_logger
+
+logger = get_logger()
 
 app = Application.builder().token(settings.telegram_bot_token).build()
 
@@ -266,7 +270,22 @@ app.add_handler(CallbackQueryHandler(handle_lang_cb, pattern="^lang:"))
 app.add_handler(CallbackQueryHandler(handle_sub_cb, pattern="^sub:"))
 app.add_handler(CallbackQueryHandler(handle_unsub_cb, pattern="^unsub:"))
 
+def pipeline_task():
+    from pipeline.collectors import run_collect
+    from main import summarize_all_languages
+    logger.info("Scheduled pipeline run started")
+    run_collect()
+    for cat in get_valid_categories():
+        summarize_all_languages(category=cat)
+    logger.info("Scheduled pipeline run complete")
+
+
 if __name__ == "__main__":
     with Database(settings.database_url) as db:
         db.init_tables()
+
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(pipeline_task, trigger='interval', hours=8, next_run_time=__import__('datetime').datetime.now())
+    scheduler.start()
+
     app.run_polling()
