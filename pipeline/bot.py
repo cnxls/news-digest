@@ -33,7 +33,7 @@ async def subscribe(update, context):
     if not context.args:
         buttons = [[InlineKeyboardButton(cat, callback_data=f"sub:{cat}")] for cat in get_valid_categories()]
         await update.message.reply_text(
-            f"Current subscribtions: <b>{current_cats}</b>\nChoose category to subscribe to:",
+            f"Current subscriptions: <b>{current_cats}</b>\nChoose category to subscribe to:",
             parse_mode="HTML",
             reply_markup=InlineKeyboardMarkup(buttons)
         )
@@ -56,7 +56,7 @@ async def subscribe(update, context):
     resulting_list.extend(cat for cat in categories if cat not in resulting_list)
     
     db.update_categories(categories=resulting_list, chat_id=chat_id)
-    await update.message.reply_text(f"""Subscribed to : {', '.join(categories)}\nYour active subscribtions:{" ,".join(current_cats)}""")
+    await update.message.reply_text(f"""Subscribed to: {', '.join(categories)}\nYour active subscriptions: {", ".join(current_cats)}""")
 
 
 async def unsubscribe(update, context):
