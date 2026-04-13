@@ -1,44 +1,62 @@
-# AI News Digest Pipeline
+# AI News Digest
 
-Automated pipeline that collects AI/Tech and Financial news from RSS sources, generates concise daily summaries using LLMs, and delivers digests via Telegram.
+> A fully automated, AI-powered news pipeline that collects articles from 18+ RSS sources, summarizes them using LLMs, and delivers clean daily digests to users via a Telegram bot — with per-user subscriptions, multilingual output, and scheduled delivery every 8 hours.
 
-## Status
+---
 
-Full pipeline is functional — collect, summarize, deliver, and scheduled runs are working. Category-based separation (tech/finance) is implemented.
+## Screenshots
 
-## What's Done
+| Welcome & Subscribe | Category Selection | Digest Delivery |
+|---|---|---|
+| ![Start](visuals/2.jpg) | ![Subscribe](visuals/13.jpg) | ![Digest](visuals/9.jpg) |
 
-- **Collectors** — RSS feed collection with category support:
-  - Tech sources (TechCrunch, MIT Tech Review, Hacker News, VentureBeat, The Verge)
-  - Finance sources (Bloomberg, Reuters, WSJ)
-  - Category-aware collection via `--category` flag
-- **Processors** — clean and deduplicate articles before summarization:
-  - HTML/whitespace cleaner
-  - Title-similarity deduplicator (85% threshold)
-- **Database** — PostgreSQL storage for articles and digests, filtered by category
-- **Config** — centralized settings via `.env` (pydantic-settings)
-- **Models** — Article data model with validation (Pydantic)
-- **Summarizer** — LLM summarization via Claude or OpenAI with async retry logic
-- **Delivery** — Telegram bot integration for sending digests
-- **Scheduler** — automated pipeline runs across all categories
+| Language Toggle | Status | Help |
+|---|---|---|
+| ![Language](visuals/6.jpg) | ![Status](visuals/11.jpg) | ![Help](visuals/10.jpg) |
 
-## Usage
+---
 
-```bash
-# Collect from all categories
-python main.py collect
+## What It Does
 
-# Collect only tech or finance
-python main.py collect --category tech
-python main.py collect --category finance
+1. **Collects** — pulls articles from 18+ RSS feeds across 6 categories (tech, finance, science, world, crypto, startups)
+2. **Processes** — cleans HTML, deduplicates by URL and title similarity (85% threshold)
+3. **Summarizes** — generates Telegram-formatted digests via Claude or OpenAI, in English and Ukrainian
+4. **Delivers** — sends digests to subscribed users via Telegram bot, tracking delivery per user to avoid duplicates
+5. **Schedules** — runs the full pipeline every 8 hours automatically
 
-# Summarize and deliver
-python main.py summarize --category tech
-python main.py deliver --category tech
+---
 
-# Run full scheduled pipeline
-python main.py schedule
-```
+## Bot Commands
+
+| Command | Description |
+|---------|-------------|
+| `/start` | Register and pick topics |
+| `/subscribe [categories]` | Subscribe to one or more categories |
+| `/unsubscribe [categories]` | Remove categories or unsubscribe fully |
+| `/digest [category]` | Get today's digest (all unsent if no category given) |
+| `/language [eng\|ukr]` | Set preferred language |
+| `/status` | View subscriptions, language, and pending digests |
+| `/help` | Show all commands |
+
+**Categories:** tech, finance, science, world, crypto, startups
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Language | Python 3.13 |
+| RSS Collection | feedparser |
+| Text Processing | BeautifulSoup, difflib |
+| Summarization | Anthropic Claude / OpenAI |
+| Database | PostgreSQL 16 |
+| Telegram Bot | python-telegram-bot |
+| Scheduling | APScheduler |
+| Config | Pydantic Settings |
+| Deployment | Docker, docker-compose |
+
+---
 
 ## Project Structure
 
@@ -46,25 +64,25 @@ python main.py schedule
 pipeline/
 ├── collectors/
 │   ├── base.py           # abstract collector interface
-│   └── rss_collector.py  # RSS feed parser
+│   └── rss_collector.py  # RSS feed parser (feedparser)
 ├── processors/
-│   ├── cleaner.py        # HTML & text cleanup
-│   └── deduplicator.py   # duplicate detection
+│   ├── cleaner.py        # HTML & whitespace cleanup
+│   └── deduplicator.py   # URL + title similarity dedup
 ├── delivery/
-│   ├── base.py           # abstract delivery interface
-│   └── telegram.py       # Telegram bot delivery
+│   └── __init__.py
+├── bot.py                # Telegram bot handlers + scheduler
 ├── config.py             # settings from .env
-├── database.py           # PostgreSQL connection & schema
-├── models.py             # Article model
+├── database.py           # PostgreSQL schema & queries
+├── models.py             # Article Pydantic model
 ├── summarizer.py         # LLM summarization (Claude/OpenAI)
 ├── logger.py             # logging setup
-└── scheduler.py          # scheduled pipeline runs
+└── scheduler.py          # APScheduler wrapper
+main.py                   # CLI entry point
 sources.yaml              # RSS feed sources by category
+docker-compose.yml        # PostgreSQL + bot services
 ```
 
-## Tech Stack
-
-Python, feedparser, PostgreSQL, Pydantic, Claude/OpenAI API, Telegram Bot API
+---
 
 ## Setup
 
@@ -74,15 +92,36 @@ cd news-digest
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env  # add your API keys
+cp .env.example .env  # fill in your API keys
 ```
 
-### Required Environment Variables
+### Environment Variables
 
 ```
-OPENAI_API_KEY=...
 ANTHROPIC_API_KEY=...
+OPENAI_API_KEY=...
 DATABASE_URL=postgresql://user:pass@localhost:5432/newsdigest
 TELEGRAM_BOT_TOKEN=...
-TELEGRAM_CHAT_ID=...
+```
+
+When deploying with Docker, also set `DB_PASSWORD` in your `.env` — used by `docker-compose.yml` to configure the PostgreSQL container.
+
+---
+
+## Run with Docker
+
+```bash
+docker compose up -d
+```
+
+Starts PostgreSQL and the bot. The pipeline runs automatically every 8 hours.
+
+---
+
+## CLI Usage
+
+```bash
+python main.py collect                   # collect from all categories
+python main.py collect --category tech   # collect specific category
+python main.py summarize --category tech # summarize collected articles
 ```
