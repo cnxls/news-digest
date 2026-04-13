@@ -220,18 +220,29 @@ async def handle_sub_cb(update, context):
     chat_id = query.message.chat_id
     cat = query.data.split(":")[1]
 
+    if cat == "done":
+        await query.edit_message_text(
+            "All set! Use /digest to read today's news.",
+            parse_mode="HTML"
+        )
+        return
+
     with Database(settings.database_url) as db:
         current_cats = db.get_user_subscriptions(chat_id=chat_id) or []
         if cat not in current_cats:
             current_cats = current_cats + [cat]
             db.update_categories(categories=current_cats, chat_id=chat_id)
-        else:
-            await query.edit_message_text(f"Already subscribed to {cat}. Choose another category", parse_mode="HTML")
-            return
+
+    buttons = [[InlineKeyboardButton(
+        f"✅ {c}" if c in current_cats else c,
+        callback_data=f"sub:{c}"
+    )] for c in get_valid_categories()]
+    buttons.append([InlineKeyboardButton("✅ Done", callback_data="sub:done")])
 
     await query.edit_message_text(
-        f"✅ Subscribed to <b>{cat}</b>.\nActive subscriptions: {', '.join(current_cats)}\n\nUse /subscribe to add more or /digest to read today's news.",
-        parse_mode="HTML"
+        f"Active subscriptions: <b>{', '.join(current_cats)}</b>\n\nPick more or use /digest to read today's news.",
+        parse_mode="HTML",
+        reply_markup=InlineKeyboardMarkup(buttons)
     )
 
 async def handle_unsub_cb(update, context):
