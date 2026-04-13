@@ -37,7 +37,7 @@ async def subscribe(update, context):
     if not context.args:
         buttons = [[InlineKeyboardButton(cat, callback_data=f"sub:{cat}")] for cat in get_valid_categories()]
         await update.message.reply_text(
-            f"Current subscriptions: <b>{current_cats}</b>\nChoose category to subscribe to:",
+            f"Current subscriptions: <b>{', '.join(current_cats)}</b>\nChoose category to subscribe to:",
             parse_mode="HTML",
             reply_markup=InlineKeyboardMarkup(buttons)
         )
