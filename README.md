@@ -2,6 +2,8 @@
 
 > A fully automated, AI-powered news pipeline that collects articles from 18+ RSS sources, summarizes them using LLMs, and delivers clean daily digests to users via a Telegram bot — with per-user subscriptions, multilingual output, and scheduled delivery every 8 hours.
 
+  **Try it:** [@ainewdigestbot](https://t.me/ainewdigestbot)
+
 ---
 
 ## Screenshots
