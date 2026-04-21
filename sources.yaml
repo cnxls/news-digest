@@ -4,12 +4,16 @@ rss:
       url: https://techcrunch.com/category/artificial-intelligence/feed/
     - name: mit
       url: https://www.technologyreview.com/feed/
-    - name: ycombinator
-      url: https://news.ycombinator.com/rss
     - name: venturebeat
       url: https://venturebeat.com/category/ai/feed/
     - name: verge
       url: https://www.theverge.com/rss/ai-artificial-intelligence/index.xml
+    - name: wired
+      url: https://www.wired.com/feed/rss
+    - name: arstechnica
+      url: https://feeds.arstechnica.com/arstechnica/index
+    - name: thenextweb
+      url: https://thenextweb.com/feed/
   finance:
     - name: yahoofinance
       url: https://feeds.finance.yahoo.com/rss/2.0/headline?s=^GSPC&region=US&lang=en-US
@@ -17,6 +21,10 @@ rss:
       url: https://www.cnbc.com/id/100003114/device/rss/rss.html
     - name: marketwatch
       url: https://feeds.marketwatch.com/marketwatch/topstories/
+    - name: reuters_business
+      url: https://feeds.reuters.com/reuters/businessNews
+    - name: investopedia
+      url: https://www.investopedia.com/feedbuilder/feed/getfeed/?feedName=rss_headline
   science:
     - name: nasa
       url: https://www.nasa.gov/feed/
@@ -26,6 +34,10 @@ rss:
       url: https://phys.org/rss-feed/
     - name: arstechnica_science
       url: https://feeds.arstechnica.com/arstechnica/science
+    - name: sciencedaily
+      url: https://www.sciencedaily.com/rss/all.xml
+    - name: eurekalert
+      url: https://www.eurekalert.org/rss.xml
   world:
     - name: bbc
       url: http://feeds.bbci.co.uk/news/world/rss.xml
@@ -35,6 +47,12 @@ rss:
       url: https://www.theguardian.com/world/rss
     - name: npr
       url: https://feeds.npr.org/1004/rss.xml
+    - name: reuters_world
+      url: https://feeds.reuters.com/Reuters/worldNews
+    - name: france24
+      url: https://www.france24.com/en/rss
+    - name: dw
+      url: https://rss.dw.com/rdf/rss-en-world
   crypto:
     - name: coindesk
       url: https://www.coindesk.com/arc/outboundfeeds/rss/
@@ -42,6 +60,10 @@ rss:
       url: https://cointelegraph.com/rss
     - name: decrypt
       url: https://decrypt.co/feed
+    - name: bitcoinmagazine
+      url: https://bitcoinmagazine.com/.rss/full/
+    - name: blockworks
+      url: https://blockworks.co/feed/
   startups:
     - name: techcrunch_startups
       url: https://techcrunch.com/category/startups/feed/
@@ -49,3 +71,7 @@ rss:
       url: https://sifted.eu/feed
     - name: producthunt
       url: https://www.producthunt.com/feed
+    - name: eu_startups
+      url: https://www.eu-startups.com/feed/
+    - name: crunchbase_news
+      url: https://news.crunchbase.com/feed/
