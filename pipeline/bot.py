@@ -2,7 +2,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, CallbackQueryHandler
 from apscheduler.schedulers.background import BackgroundScheduler
 from pipeline.database import Database
-from pipeline.config import settings, get_valid_categories
+from pipeline.config import settings, get_valid_categories, get_sources_by_category
 from pipeline.logger import get_logger
 
 logger = get_logger()
@@ -170,6 +170,31 @@ async def help(update, context):
         "<i>Example:</i> /subscribe tech finance crypto",
         parse_mode="HTML"
     )
+
+async def sources(update, context):
+    by_cat = get_sources_by_category()
+    if context.args:
+        cat = context.args[0].lower()
+        if cat not in by_cat:
+            await update.message.reply_text(f"Unknown category: {cat}\nAvailable: {', '.join(by_cat)}")
+            return
+        feed_list = "\n".join(f" • {name}" for name in by_cat[cat])
+        await update.message.reply_text(
+            f"📡 <b>Sources for {cat}:</b>\n{feed_list}",
+            parse_mode="HTML"
+        )
+        return
+
+    lines = []
+    for cat, feeds in by_cat.items():
+        lines.append(f"<b>{cat}</b> ({len(feeds)} feeds)")
+        lines.extend(f" • {name}" for name in feeds)
+        lines.append("")
+    await update.message.reply_text(
+        f"📡 <b>All News Sources</b>\n\n" + "\n".join(lines),
+        parse_mode="HTML"
+    )
+
 
 async def language(update, context):
     chat_id = update.effective_chat.id
