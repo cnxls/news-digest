@@ -13,8 +13,14 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
-def get_valid_categories():
+def _load_sources():
     sources_path = os.path.join(os.path.dirname(__file__), '..', 'sources.yaml')
     with open(sources_path, 'r') as f:
-        sources = yaml.safe_load(f) or {}
-    return list(sources.get('rss', {}).keys())
+        return yaml.safe_load(f) or {}
+
+def get_valid_categories():
+    return list(_load_sources().get('rss', {}).keys())
+
+def get_sources_by_category():
+    rss = _load_sources().get('rss', {})
+    return {cat: [s['name'] for s in feeds] for cat, feeds in rss.items()}
