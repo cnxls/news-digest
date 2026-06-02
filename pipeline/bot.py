@@ -164,6 +164,7 @@ async def help(update, context):
         "/unsubscribe — Unsubscribe from all updates\n"
         "/digest &lt;category&gt; — Get today's latest digest (or all unsent if no category)\n"
         "/language &lt;eng|ukr&gt; — Set digest language\n"
+        "/sources &lt;category&gt; — See where your news comes from\n"
         "/status — Your subscriptions and pending digests\n"
         "/help — Show this message\n\n"
         f"<b>Categories:</b> {', '.join(get_valid_categories())}\n\n"
@@ -301,6 +302,7 @@ app.add_handler(CommandHandler("unsubscribe", unsubscribe))
 app.add_handler(CommandHandler("digest", todays_digest))
 app.add_handler(CommandHandler("language", language))
 app.add_handler(CommandHandler("help", help))
+app.add_handler(CommandHandler("sources", sources))
 app.add_handler(CommandHandler("status", status))
 app.add_handler(CallbackQueryHandler(handle_lang_cb, pattern="^lang:"))
 app.add_handler(CallbackQueryHandler(handle_sub_cb, pattern="^sub:"))
