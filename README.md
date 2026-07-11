@@ -10,13 +10,9 @@
 
 ## Screenshots
 
-| Welcome & Subscribe | Category Selection | Digest Delivery |
+| Onboarding & Topics | Daily Digest | Multilingual (EN / UA) |
 |---|---|---|
-| ![Start](visuals/2.jpg) | ![Subscribe](visuals/13.jpg) | ![Digest](visuals/9.jpg) |
-
-| Language Toggle | Status | Help |
-|---|---|---|
-| ![Language](visuals/6.jpg) | ![Status](visuals/11.jpg) | ![Help](visuals/10.jpg) |
+| ![Onboarding](visuals/2.jpg) | ![Digest](visuals/9.jpg) | ![Language](visuals/6.jpg) |
 
 ---
 
