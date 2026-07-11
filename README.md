@@ -4,6 +4,8 @@
 
   **Try it:** [@ainewdigestbot](https://t.me/ainewdigestbot)
 
+![AI News Digest](visuals/thumbnail.png)
+
 ---
 
 ## Screenshots
@@ -18,7 +20,9 @@
 
 ---
 
-## What It Does
+## How It Works
+
+![Pipeline architecture](visuals/architecture.png)
 
 1. **Collects** — pulls articles from 18+ RSS feeds across 6 categories (tech, finance, science, world, crypto, startups)
 2. **Processes** — cleans HTML, deduplicates by URL and title similarity (85% threshold)
