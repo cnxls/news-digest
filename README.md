@@ -1,10 +1,31 @@
 # AI News Digest
 
-> A fully automated, AI-powered news pipeline that collects articles from 18+ RSS sources, summarizes them using LLMs, and delivers clean daily digests to users via a Telegram bot — with per-user subscriptions, multilingual output, and scheduled delivery every 8 hours.
+> A fully automated, AI-powered news pipeline that collects articles from **35 RSS sources**, deduplicates and summarizes them with LLMs, and delivers clean daily digests through a Telegram bot — with per-user subscriptions, multilingual output (EN / UA), and scheduled delivery every 8 hours.
 
-  **Try it:** [@ainewdigestbot](https://t.me/ainewdigestbot)
+<p>
+  <img alt="Python" src="https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white">
+  <img alt="PostgreSQL" src="https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white">
+  <img alt="Docker" src="https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white">
+  <img alt="Telegram" src="https://img.shields.io/badge/Telegram-Bot-26A5E4?logo=telegram&logoColor=white">
+  <img alt="License" src="https://img.shields.io/badge/License-MIT-3fb950">
+</p>
+
+**Try it live:** [@ainewdigestbot](https://t.me/ainewdigestbot)
 
 ![AI News Digest](visuals/thumbnail.png)
+
+---
+
+## ✨ Features
+
+- 📡 **35 RSS feeds** across **6 categories** — tech, finance, science, world, crypto, startups
+- 🔎 **Smart deduplication** — drops repeat URLs and titles that are ≥ 85% similar (`difflib`)
+- 🤖 **LLM summarization** — merges the day's stories into one briefing via Claude or OpenAI
+- 🌍 **Multilingual** — every digest generated in **English and Ukrainian**
+- 👤 **Per-user subscriptions** — each user picks categories and language; delivery is tracked per user so nobody gets the same digest twice
+- ♻️ **Resilient** — automatic retries with exponential backoff on API rate limits
+- ⏱️ **Fully automated** — the whole pipeline reruns every 8 hours via APScheduler
+- 🐳 **One-command deploy** — PostgreSQL + bot ship together in Docker Compose
 
 ---
 
@@ -20,11 +41,26 @@
 
 ![Pipeline architecture](visuals/architecture.png)
 
-1. **Collects** — pulls articles from 18+ RSS feeds across 6 categories (tech, finance, science, world, crypto, startups)
-2. **Processes** — cleans HTML, deduplicates by URL and title similarity (85% threshold)
-3. **Summarizes** — generates Telegram-formatted digests via Claude or OpenAI, in English and Ukrainian
-4. **Delivers** — sends digests to subscribed users via Telegram bot, tracking delivery per user to avoid duplicates
-5. **Schedules** — runs the full pipeline every 8 hours automatically
+1. **Collect** — pulls articles from 35 RSS feeds across 6 categories (`feedparser`)
+2. **Clean** — strips HTML tags and normalizes whitespace to plain text (`BeautifulSoup`)
+3. **Deduplicate** — drops repeat URLs and titles that are ≥ 85% similar (`SequenceMatcher`)
+4. **Store** — persists only new articles in PostgreSQL, tracking what's been sent
+5. **Summarize** — an LLM merges everything into one digest — **EN + UA**, with TL;DR and sources
+6. **Deliver** — sends to subscribers by category and language, with per-user delivery tracking to avoid duplicates
+
+The full flow is orchestrated by **APScheduler** and reruns **automatically every 8 hours**.
+
+---
+
+## Live Run
+
+A single collect + summarize cycle — 35 feeds in, one clean digest out:
+
+![Terminal run](visuals/terminal.png)
+
+The deduplication step keeps only the first occurrence of each unique story:
+
+![Deduplicator](visuals/code-snippet.png)
 
 ---
 
@@ -37,6 +73,7 @@
 | `/unsubscribe [categories]` | Remove categories or unsubscribe fully |
 | `/digest [category]` | Get today's digest (all unsent if no category given) |
 | `/language [eng\|ukr]` | Set preferred language |
+| `/sources [category]` | See which feeds a category pulls from |
 | `/status` | View subscriptions, language, and pending digests |
 | `/help` | Show all commands |
 
@@ -73,14 +110,14 @@ pipeline/
 ├── delivery/
 │   └── __init__.py
 ├── bot.py                # Telegram bot handlers + scheduler
-├── config.py             # settings from .env
+├── config.py             # settings + source loading
 ├── database.py           # PostgreSQL schema & queries
 ├── models.py             # Article Pydantic model
 ├── summarizer.py         # LLM summarization (Claude/OpenAI)
 ├── logger.py             # logging setup
 └── scheduler.py          # APScheduler wrapper
 main.py                   # CLI entry point
-sources.yaml              # RSS feed sources by category
+sources.yaml              # 35 RSS feeds grouped by category
 docker-compose.yml        # PostgreSQL + bot services
 ```
 
@@ -124,6 +161,12 @@ Starts PostgreSQL and the bot. The pipeline runs automatically every 8 hours.
 
 ```bash
 python main.py collect                   # collect from all categories
-python main.py collect --category tech   # collect specific category
+python main.py collect --category tech   # collect a specific category
 python main.py summarize --category tech # summarize collected articles
 ```
+
+---
+
+## License
+
+Released under the [MIT License](LICENSE).
