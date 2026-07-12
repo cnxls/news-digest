@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings
 from pydantic import Field
 
 class Settings(BaseSettings):
-    model_config = {"env_file": ".env"}
+    model_config = {"env_file": ".env", "extra": "ignore"}
     openai_api_key: str            # reads OPENAI_API_KEY 
     anthropic_api_key: str         # reads ANTHROPIC_API_KEY 
     database_url: str              # reads DATABASE_URL 

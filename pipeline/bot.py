@@ -158,17 +158,19 @@ async def status(update, context):
 
 async def help(update, context):
     await update.message.reply_text(
-        "<b>Available commands:</b>\n\n"
-        "/start — Register and get started\n"
-        "/subscribe &lt;categories&gt; — Subscribe to topics\n"
-        "/unsubscribe — Unsubscribe from all updates\n"
-        "/digest &lt;category&gt; — Get today's latest digest (or all unsent if no category)\n"
-        "/language &lt;eng|ukr&gt; — Set digest language\n"
-        "/sources &lt;category&gt; — See where your news comes from\n"
-        "/status — Your subscriptions and pending digests\n"
+        "📖 <b>News Digest — Commands</b>\n\n"
+        "<b>🚀 Getting started</b>\n"
+        "/start — Register and pick your topics\n"
+        "/subscribe — Add categories  ·  <code>/subscribe tech finance</code>\n"
+        "/unsubscribe — Remove categories or leave\n\n"
+        "<b>📰 Your news</b>\n"
+        "/digest — Read today's digest  ·  <code>/digest crypto</code>\n"
+        "/status — Your subscriptions &amp; pending digests\n"
+        "/sources — See where your news comes from  ·  <code>/sources tech</code>\n\n"
+        "<b>⚙️ Settings</b>\n"
+        "/language — Switch language  ·  <code>eng | ukr</code>\n"
         "/help — Show this message\n\n"
-        f"<b>Categories:</b> {', '.join(get_valid_categories())}\n\n"
-        "<i>Example:</i> /subscribe tech finance crypto",
+        f"<b>Categories:</b> <i>{', '.join(get_valid_categories())}</i>",
         parse_mode="HTML"
     )
 
